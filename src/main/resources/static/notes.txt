@@ -1,0 +1,29 @@
+8/7/2025
+
+1. In your HelloworldApplication.java, we have @SpringbootApplication
+This annotation is a combo of three:
+@SpringBootApplication =
+    @Configuration +
+    @EnableAutoConfiguration +
+    @ComponentScan
+2. @ComponentScan Scans Your Package
+   Spring Boot scans the package where your main class resides (com.pawan.hello.helloworld) and everything below it for Spring-managed components like:
+   @Component
+   @Controller
+   @Service
+   @Repository
+   @RestController ✅
+   Your HelloController is in the same package, and it is annotated with @RestController, which is a specialized @Component.
+   So Spring sees this class and registers it as a Bean in the IoC container.
+
+3. DispatcherServlet Maps HTTP Requests
+  When a request comes to http://localhost:8080/, here’s what happens:
+  Spring’s internal DispatcherServlet receives it. It checks the list of controller methods (like your @GetMapping("/")) that it registered during startup.
+  It finds that HelloController.sayHello() is mapped to / and calls it.The return value ("Hello, World!") is sent back as the HTTP response body.
+
+🛠 So in Summary:
+What happened?	How it worked
+App started	@SpringBootApplication launched Spring context
+Your class was found	@ComponentScan picked up @RestController
+It registered your method	@GetMapping("/") told Spring what to do for /
+Dispatcher handled the request	Called your method and returned the response
