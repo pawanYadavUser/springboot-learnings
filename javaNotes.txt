@@ -1,0 +1,364 @@
+1.- Explain Java OOPS with example in real life and in code.
+OOPS Concepts in Java
+Encapsulation → Binding data (fields) and behavior (methods) into a single unit (class).
+Inheritance → One class (child) acquires properties & methods from another (parent).
+Polymorphism → Ability of an object/method to take many forms (method overloading & overriding).
+Abstraction → Hiding implementation details, showing only the essential features.
+
+Real-life Example: Car
+Encapsulation → A car hides its internal engine mechanism but provides methods like accelerate(), brake().
+Inheritance → ElectricCar and DieselCar inherit from Car.
+Polymorphism → start() behaves differently for an ElectricCar (push button) vs DieselCar (ignition key).
+Abstraction → You just drive the car using the steering wheel, accelerator, and brake — you don’t need to know how the engine works internally.
+
+So in my projects, I use OOPs to design modular, maintainable, and reusable code. For example, services extend base classes,
+entities encapsulate fields, and polymorphism helps in handling different request types flexibly
+// Abstraction + Encapsulation
+abstract class Car {
+    private String brand;  // Encapsulation
+
+    public Car(String brand) {
+        this.brand = brand;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    // Abstract method -> Abstraction
+    public abstract void start();
+}
+// Inheritance
+class ElectricCar extends Car {
+    public ElectricCar(String brand) {
+        super(brand);
+    }
+
+    // Polymorphism (method overriding)
+    @Override
+    public void start() {
+        System.out.println(getBrand() + " starts silently with a push button.");
+    }
+}
+class DieselCar extends Car {
+    public DieselCar(String brand) {
+        super(brand);
+    }
+
+    @Override
+    public void start() {
+        System.out.println(getBrand() + " starts with ignition key and engine sound.");
+    }
+}
+public class OOPSDemo {
+    public static void main(String[] args) {
+        // Polymorphism in action
+        Car tesla = new ElectricCar("Tesla");
+        Car ford = new DieselCar("Ford");
+
+        tesla.start();  // Tesla starts silently with a push button.
+        ford.start();   // Ford starts with ignition key and engine sound.
+    }
+}
+✅ In interviews, best way to answer:
+So in my projects, I use OOPs to design modular, maintainable, and reusable code. For example, services extend base classes,
+entities encapsulate fields, and polymorphism helps in handling different request types flexibly
+
+----------------
+
+2. - Is Java 100% object-oriented?
+ Reasons why Java is not fully OOP:
+ Primitive Data Types →
+ Java has 8 primitive types (int, char, boolean, float, double, long, short, byte).
+ These are not objects (they are stored in stack memory, not heap).
+
+ Static Methods & Variables →
+ static methods/variables (like main()) belong to a class, not an object, which breaks strict OOP.
+
+ Wrapper Classes (Autoboxing) →
+ Java provides wrapper classes (Integer, Double, etc.) to use primitives as objects, but primitives themselves are still not objects.
+
+ Java is object-oriented but not purely object-oriented.
+
+ A pure OOP language would not have primitives (e.g., Smalltalk, Scala to some extent).
+ 👉 So, in an interview you can reply:
+ "Java is not 100% object-oriented because it supports primitive data types and static methods, which are not objects.
+ However, through wrapper classes and autoboxing, primitives can behave like objects when needed."
+
+-------------------
+3. What are the basic classes in Java?
+📌 Basic Classes in Java (java.lang package mainly)
+
+Object
+Root class of all Java classes.
+Every class implicitly inherits from Object.
+Provides methods like toString(), equals(), hashCode(), clone().
+
+Wrapper Classes (for primitives → objects)
+Integer, Byte, Short, Long, Float, Double, Character, Boolean.
+Used in collections (because collections store objects, not primitives).
+Support autoboxing/unboxing.
+
+String & StringBuffer / StringBuilder
+String → Immutable sequence of characters.
+StringBuffer → Mutable, thread-safe.
+StringBuilder → Mutable, faster (non-synchronized).
+
+Math
+Provides methods for mathematical operations (sqrt, pow, abs, sin, etc.).
+
+System
+Provides system-related utilities (System.out.println, System.gc(), etc.).
+
+Class
+Represents metadata of classes (used in Reflection API).
+
+Throwable → Exception & Error
+Root of exception-handling hierarchy.
+Exception → Recoverable problems (e.g., IOException, SQLException).
+Error → Serious problems (e.g., OutOfMemoryError).
+
+Thread (from java.lang and java.util.concurrent)
+Represents a thread of execution.
+Works with Runnable interface.
+
+📌 Important Utility Classes (java.util package)
+Collections Framework
+ArrayList, HashMap, HashSet, LinkedList, TreeMap, etc.
+
+Date & Time API
+Legacy: Date, Calendar.
+Modern (Java 8+): LocalDate, LocalTime, LocalDateTime, ZonedDateTime, etc.
+
+------------------
+3. What all methods are there in Object class?
+✅ Methods in Object class:
+
+public final Class<?> getClass()
+Returns the runtime class of the object.
+Example: obj.getClass().getName()
+
+public int hashCode()
+Returns a hash code (used in hashing-based collections like HashMap, HashSet).
+
+public boolean equals(Object obj)
+Compares the current object with another for equality.
+Can be overridden for custom equality logic.
+
+protected Object clone() throws CloneNotSupportedException
+Creates and returns a copy of the object (shallow copy).
+Requires implementing Cloneable interface.
+
+public String toString()
+Returns a string representation of the object.
+Default: className@hashCode.
+Commonly overridden.
+
+public final void notify()
+Wakes up one thread waiting on this object’s monitor.
+Related to synchronization.
+
+public final void notifyAll()
+Wakes up all threads waiting on this object’s monitor.
+
+public final void wait()
+Causes the current thread to wait until another thread invokes notify() or notifyAll().
+
+public final void wait(long timeout)
+Waits for a specified time (in milliseconds).
+
+public final void wait(long timeout, int nanos)
+Waits for the specified time with nanoseconds precision.
+
+protected void finalize() throws Throwable
+Called by the garbage collector before object destruction.
+Deprecated in Java 9 (not recommended for use).
+
+✅ In summary:
+Object Identity/Comparison → equals(), hashCode()
+Object Representation → toString()
+Object Copying → clone()
+Thread Synchronization → wait(), notify(), notifyAll()
+GC Hook → finalize()
+
+----------------------
+
+4. - Final, finally and finalize?
+1. final (keyword)
+Used to declare constants, prevent inheritance, or prevent method overriding.
+Usage:
+Final variable → Value cannot change.
+final int MAX = 100;
+
+Final method → Cannot be overridden by child classes.
+class Parent {
+    final void show() { System.out.println("Hello"); }
+}
+
+Final class → Cannot be subclassed.
+final class MyClass {}
+
+2. finally (block)
+Used in exception handling to execute a block of code always, regardless of whether an exception occurs or not.
+try {
+    int a = 10/0;
+} catch (ArithmeticException e) {
+    System.out.println("Exception caught");
+} finally {
+    System.out.println("This always executes");
+}
+Commonly used for resource cleanup (closing files, DB connections).
+
+3. finalize() (method)
+  Called by the garbage collector before an object is destroyed.
+  Lets you perform cleanup before the object is removed from memory.
+  @Override
+  protected void finalize() throws Throwable {
+      System.out.println("Object is being garbage collected");
+  }
+Note: Deprecated in Java 9+, not recommended in modern Java.
+
+------------------------------------
+
+5. - Instance block, static block, anonymous block, constructor - How does the calling happen in Java. Explain RIWO
+1️⃣ Static Block
+Definition: Block of code inside a class marked with static { ... }.
+Purpose: Initialize static variables or perform one-time setup.
+Execution: Runs once, when the class is loaded into memory, before main() or any object creation.
+
+2️⃣ Instance Block (Non-static block)
+Definition: Block inside class without any keyword.
+Purpose: Initialize instance variables.
+Execution: Runs every time an object is created, before constructor.
+
+3️⃣ Constructor
+Definition: Special method with same name as class, no return type.
+Purpose: Initialize object and assign values to instance variables.
+Execution: Runs after instance block whenever object is created.
+
+4️⃣ Anonymous Block
+Usually refers to a non-static instance block (like the instance block above).
+Runs every time object is created, before constructor.
+
+5️⃣ Order of Execution (RIWO)
+If you create a class like this:
+class Demo {
+    static {
+        System.out.println("Static block");
+    }
+
+    {
+        System.out.println("Instance block");
+    }
+
+    Demo() {
+        System.out.println("Constructor");
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Main method starts");
+        new Demo();
+        new Demo();
+    }
+}
+execution output:-
+Static block        // executes once when class loads
+Main method starts
+Instance block      // for 1st object
+Constructor         // for 1st object
+Instance block      // for 2nd object
+Constructor         // for 2nd object
+
+✅ Key Points
+Static block → Once when class loads.
+Instance / Anonymous block → Every object, before constructor.
+Constructor → Every object, after instance block.
+Main method → After class is loaded and static blocks executed
+
+RIWO for Interview
+If someone asks, “What runs first?” → Static block → Instance block → Constructor → main() (for object creation).
+
+------------------
+
+6. - Interface vs Abstract class explain with real life and code example and when to use each one of them?
+1️⃣ Real-Life Analogy
+Concept	Analogy
+Interface	Like a remote control standard: Any device (TV, AC, Fan) that implements it must provide methods like turnOn() or turnOff().
+You only care about the actions, not how they are done.
+Abstract Class	Like a Vehicle blueprint: It can have some implemented features (like wheels, fuel type) and some abstract methods (like startEngine()).
+Child classes (Car, Bike) inherit and complete the implementation.
+
+2️⃣ Java Code Example
+Interface Example
+interface Remote {
+    void turnOn();
+    void turnOff();
+}
+
+class TV implements Remote {
+    public void turnOn() {
+        System.out.println("TV is ON");
+    }
+    public void turnOff() {
+        System.out.println("TV is OFF");
+    }
+}
+
+class Fan implements Remote {
+    public void turnOn() {
+        System.out.println("Fan is ON");
+    }
+    public void turnOff() {
+        System.out.println("Fan is OFF");
+    }
+}
+✅ Key points:
+Cannot have instance variables (before Java 8).
+Only abstract methods (Java 8+ allows default and static methods).
+Supports multiple inheritance.
+
+Abstract Class Example
+abstract class Vehicle {
+    String fuelType = "Petrol";  // implemented feature
+
+    abstract void startEngine();  // abstract method
+
+    void displayFuel() {           // concrete method
+        System.out.println("Fuel type: " + fuelType);
+    }
+}
+
+class Car extends Vehicle {
+    void startEngine() {
+        System.out.println("Car engine started");
+    }
+}
+
+class Bike extends Vehicle {
+    void startEngine() {
+        System.out.println("Bike engine started");
+    }
+}
+✅ Key points:
+Can have both abstract and concrete methods.
+Can have instance variables.
+Supports single inheritance (only 1 parent class).
+
+3️⃣ When to Use Each
+Feature / Use Case	Interface	Abstract Class
+Purpose	Define capabilities (what to do)	Define base class with partial implementation (what & how)
+Methods	Only abstract (Java 7); default/static in Java 8+	Abstract + concrete
+Variables	Only constants (static final)	Instance variables allowed
+Inheritance	Multiple inheritance allowed	Single inheritance only
+Example Scenario	“Any device that can be turned on/off”	“All vehicles share fuel type and displayFuel(), but startEngine() differs”
+
+Interview Tip
+“Use an interface when you want to define what a class can do without caring how.
+Use an abstract class when you want to provide some shared functionality and leave some methods to be implemented by subclasses.”
+
+--------------------------------
+
+7. Where hashCode () is getting used in actual software dev?
+hashCode() is one of those methods in Java that you rarely call directly in day-to-day coding, but it’s used heavily under the hood in real software development.
+
+🔑 Where hashCode() is actually used in real-world software dev:

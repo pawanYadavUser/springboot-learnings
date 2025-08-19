@@ -1,0 +1,969 @@
+Phase 1: Spring Boot Fundamentals (This Week)
+ Goal: Build a basic REST API with full understanding of layers.
+
+ Concept	What to Learn	Why It Matters
+✅ Project setup	Use Spring Initializr with Maven	Standard project starter
+✅ @SpringBootApplication	Auto-configuration, component scan	Entry point of app
+✅ REST Controller	@RestController, @GetMapping, etc.	Handle HTTP requests
+✅ Service Layer	@Service	Business logic lives here
+✅ Repository Layer	@Repository, JPA, H2/MySQL	Data access layer
+✅ Dependency Injection	@Autowired, Constructor injection	Core Spring concept
+✅ Application.properties	Configure port, DB, logging	Environment setup
+
+- implementation of IoC principle
+- spring framework runtime 
+Core containers
+Bean , Core, Context, spel
+
+- Spring needs multiple configuration to be done by you.
+
+- Spring boot helps u to create stand-alone, production grade, spring-based 
+application that you can run
+more of like a plug and play solution!
+e.g., Netflix is using springboot in most of their production applications
+
+- Inversion of Control
+It is a popular programming principle used extensively in the design of modern software
+frameweorks e.g., in springboot
+It refers to the practice of inverting the control of the system by delegating the control
+of the relationships of the objects to the separate component or container rather than letting
+each object control its own Dependencies and lifecycle
+
+- Dependency Injection
+Is specialised form of IoC, whereby objects define their Dependencies, ( that is, the other objects they work with) only through 
+Constructor arguments, arguments to a factory method properties that are set on the object instance after it is constructed or returned 
+from a factory method
+
+- Benefits of IoC
+Modularity :- promotes modular app development through Dependency injection
+Ease of testing :- Makes it easier to test out the code by injecting mock implementations.
+Loose coupling :- Reduces dependencies between components , making it easier to manage and evolve applications
+
+- Spring IoC container & Application Context
+Spring IoC container: manages the instantiation, configuration & assembly of beans.
+Types of contaienrs:-
+Bean factory:- Basic container functionality, suitable for simple applications.
+Application context :- More advanced , supporting internationalization, event propagation, declarative mechanism to configure a bean.
+
+In summary , Application context is the Spring IoC container that manages the 
+beans (POJOs) for us.
+
+03/07/2025
+
+2.4 Beans:- beans are objects that r instantiated, managed and assembled by spring IoC container
+Bean scope :- 
+singleton : single instance per spring IoC container
+Prototype: a new instance each time a bean is requested
+Request, session and global session
+
+Bean scope defines how many objects Spring should create for a particular bean — and when.
+
+🔹 1. Singleton (default)
+🔁 One instance per Spring container
+All requests for this bean will return the same object, Default scope in Spring. e.g., Example: Useful for stateless services, config beans.
+
+🔹 2. Prototype
+🆕 A new object is created each time you request the bean, Not shared, not managed after creation. e.g., Example: Useful for stateful beans, like forms.
+
+🔹 3. Request (Web only)
+🧾 One bean instance per HTTP request, Bean lives only during the request.
+
+🔹 4. Session
+🧑‍💼 One bean instance per HTTP session ,Lives as long as the user session is active.
+
+🔹 5. Global Session
+🗺️ Like session scope, but for portlet-based apps (rare today) ,used in legacy systems, mostly irrelevant now.
+
+
+
+-------------------------------------------------------------------------------
+
+Project :- 
+1. Let me know if you want a mini-project or example using 
+prototype vs singleton beans — it’s a cool way to feel the difference.
+
+---------------------------------------------------------------------------------
+
+13/07/2025
+
+1. Annotations!
+@SpringBootApplication	Indicates a configuration class that declares one or more @Bean methods and 
+also triggers auto-configuration and component scanning.
+
+@RestController	Combines @Controller and @ResponseBody to simplify the creation of RESTful web services.
+
+@RequestMapping	Provides routing information and is used to map web requests to specific handler classes or methods.
+
+@GetMapping	A composed annotation that acts as a shortcut for @RequestMapping(method = RequestMethod.GET).
+@PostMapping	A composed annotation that acts as a shortcut for @RequestMapping(method = RequestMethod.POST).
+@PutMapping	A composed annotation that acts as a shortcut for @RequestMapping(method = RequestMethod.PUT).
+@DeleteMapping	A composed annotation that acts as a shortcut for @RequestMapping(method = RequestMethod.DELETE).
+@PatchMapping	A composed annotation that acts as a shortcut for @RequestMapping(method = RequestMethod.PATCH).
+
+@Autowired	Marks a constructor, field, setter method, or config method as to be autowired by Spring's dependency injection facilities.
+
+@Component	Indicates that an annotated class is a "component". Such classes are considered as candidates for auto-detection when using
+ annotation-based configuration and classpath scanning.
+
+@Service	Indicates that an annotated class is a "Service" (e.g., a business service facade).
+
+@Repository	Indicates that an annotated class is a "Repository" (e.g., a Data Access Object or DAO).
+
+@Configuration	Indicates that a class declares one or more @Bean methods and may be processed by the Spring container to generate bean definitions and
+ service requests for those beans at runtime.
+
+@Bean	Indicates that a method produces a bean to be managed by the Spring container.
+
+@Value	Indicates a default value expression for the annotated element.
+
+@PropertySource	Provides a convenient and declarative mechanism for adding a PropertySource to Spring's Environment.
+
+@EnableAutoConfiguration	Enables Spring Boot’s auto-configuration mechanism.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+15/08/2025
+
+1. Dependency injection
+1️⃣ Start with the big picture
+Dependency Injection (DI) is a way to give an object the things it needs (dependencies) instead of having the object create them itself.
+
+In Spring Boot → Spring does this for you automatically through its IoC (Inversion of Control) container.
+
+Interview-friendly analogy:
+
+Imagine you need a car for a trip.
+Without DI → You build the car yourself (engine, tires, etc.).
+With DI → You just tell the rental company “I need a car,” and they hand you a ready-made car.
+Spring is the rental company here — it creates and supplies the needed objects.
+
+2️⃣ Why it matters in Spring Boot
+Loose coupling → Classes depend on interfaces, not specific implementations.
+Easier testing → You can inject mock dependencies.
+Centralized configuration → You don’t hardcode dependencies everywhere.
+
+3️⃣ How Spring Boot does it
+Spring manages all objects (called Beans) in the ApplicationContext.
+You tell Spring what beans you need, and it injects them into your class.
+
+4️⃣ Ways DI is done in Spring Boot
+a) Constructor Injection (Preferred)
+@Service
+public class OrderService {
+    private final PaymentService paymentService;
+
+    @Autowired  // Optional in newer Spring versions
+    public OrderService(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+
+    public void placeOrder() {
+        paymentService.processPayment();
+    }
+}
+b) Setter Injection
+@Service
+public class OrderService {
+    private PaymentService paymentService;
+
+    @Autowired
+    public void setPaymentService(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+}
+c) Field Injection (Not recommended for large projects)
+@Service
+public class OrderService {
+    @Autowired
+    private PaymentService paymentService;
+}
+5️⃣ What happens under the hood
+Spring Boot scans packages for classes annotated with @Component, @Service, @Repository, @Controller.
+It creates bean instances for them.
+When a class needs another bean, Spring injects it using the method you defined (constructor/setter/field).
+
+6️⃣ Bonus for the interview
+DI is a special case of IoC: In IoC, the framework controls object creation; DI is specifically about injecting dependencies.
+Best practice: Use constructor injection in Spring Boot because it makes dependencies explicit and allows immutability.
+
+Interview one-liner:
+In Spring Boot, Dependency Injection means Spring automatically supplies the objects your class needs, instead of your class creating them itself.
+It’s implemented through the IoC container, making code loosely coupled, testable, and easier to maintain.
+
+
+16/08/2025
+
+1. What is auto-configuration?
+
+2. POST vs PUT vs DELETE vs PATCH vs GET?
+🔹 PUT
+Purpose: Replace the entire resource.
+Behavior: Whatever fields you don’t send will typically be set to null or default.
+Idempotent: Multiple identical PUT calls → same final state.
+PUT /users/1
+{
+  "name": "John",
+  "email": "john@mail.com",
+  "age": 30
+}
+Replaces the whole user with exactly these values. If "age" is missing, it might become null.
+
+🔹 PATCH
+Purpose: Update a partial resource (only some fields).
+Behavior: Only modifies the fields you send, leaves the rest untouched.
+Idempotency: Depends on implementation, but usually safe if same patch applied multiple times.
+PATCH /users/1
+{
+  "email": "john.new@mail.com"
+}
+Only updates the email, keeps name and age as they were.
+✅ In short:
+PUT = replace everything (full update).
+PATCH = modify only what you send (partial update).
+
+✅ When to use PUT
+You expect the client to always send the full resource representation.
+The API semantics are replace-the-whole-object.
+Example:
+Updating a user profile where the front-end always submits all fields from a form.
+Replacing a configuration file stored in DB.
+Rule: Client owns the whole state, server just replaces it.
+
+✅ When to use PATCH
+You expect the client to send only the fields it wants to update.
+Useful for large resources or sparse updates (don’t resend unchanged data).
+Example:
+Updating only the email field of a user.
+Changing just the status field of an order ("status": "shipped").
+Rule: Client only specifies the delta (changes), server merges into existing state.
+
+Practical Notes
+Idempotency:
+PUT is always idempotent → sending the same request multiple times results in the same final state.
+PATCH is usually idempotent, but can be non-idempotent if designed poorly (e.g., "age": "+1" instead of "age": 31).
+
+Performance:
+PUT may require sending large payloads every time.
+PATCH is lighter, better for mobile apps or bandwidth-sensitive clients.
+
+Error safety:
+With PUT, if you forget a field → it may be overwritten with null.
+With PATCH, omitted fields remain intact.
+
+👉 Rule of Thumb:
+Use PUT if your resource is small and simple, and full replacement makes sense.
+Use PATCH if your resource is big, partially editable, or frequently updated field-by-field.
+
+3. auto-configuration vs annotation-based-configuration vs componentScanning vs class path scanning?
+3.1. Auto-Configuration (Spring Boot feature)
+What: Spring Boot automatically configures beans in the application context based on classpath contents and property settings.
+How: Driven by @EnableAutoConfiguration (included in @SpringBootApplication).
+Example:
+If spring-boot-starter-data-jpa is on the classpath → Spring Boot auto-configures a DataSource, EntityManagerFactory, JpaRepositories.
+If spring-boot-starter-web is present → auto-configures DispatcherServlet, Jackson ObjectMapper, etc.
+Benefit: Reduces boilerplate — you don’t need to manually configure common beans.
+
+3.2. Annotation-based Configuration
+  What: Using annotations to explicitly tell Spring how to create and inject beans.
+  Examples:
+  @Configuration + @Bean → define beans manually in a class.
+  @Autowired → inject a bean automatically.
+  @Component, @Service, @Repository, @Controller → mark classes as beans.
+  Benefit: More control than auto-config. You explicitly define what Spring should manage.
+
+3.3. Component Scanning
+What: Spring scans specified packages for classes annotated with @Component (or @Service, @Repository, @Controller, etc.), and automatically registers them as beans.
+How: Enabled by @ComponentScan (included by default in @SpringBootApplication).
+Example:
+@SpringBootApplication
+@ComponentScan("com.example.myapp") // tells Spring where to look
+public class MyApp {}
+→ Finds all @Service, @Controller, etc. in com.example.myapp and registers them.
+
+3.4. Classpath Scanning
+What: The mechanism Spring uses under the hood to scan the classpath (JARs, packages, folders) to find candidate classes for beans.
+Relation: Component Scanning is a specialized case of classpath scanning that looks specifically for annotated components.
+Example: When you use @ComponentScan("com.example"), Spring performs a classpath scan under com.example and registers beans.
+
+🔑 Key Differences (Summary)
+Feature	What it Does	Who Controls It	Example
+Auto-Configuration	Spring Boot provides default beans based on classpath & properties	Spring Boot	Auto-configured DataSource when JDBC driver is present
+Annotation-based Config	Explicit bean definition via annotations	You (developer)	@Bean, @Autowired, @Service
+Component Scanning	Scans packages for @Component-style annotations	You (developer)	@ComponentScan("com.example")
+Classpath Scanning	Underlying process of scanning the classpath for classes	Spring Framework	Used by component scanning & auto-config
+
+✅ In short:
+Auto-configuration → Boot gives you beans automatically (opinionated defaults).
+Annotation-based → You explicitly define beans and dependencies.
+Component scanning → Spring automatically registers annotated beans in specified packages.
+Classpath scanning → The low-level mechanism Spring uses to find those annotated classes.
+
+4. What is Spring AOP?
+✅ Simple Definition
+AOP (Aspect-Oriented Programming) is a way to keep common/repeated code (like logging, security, transactions)
+in one place instead of writing it again and again in every class or method.
+You write that repeated logic once in a separate class (aspect).
+Spring will automatically apply it wherever needed, without you touching the business logic.
+
+✅ Example Without AOP
+Suppose you have 3 service methods:
+public void createOrder() {
+    System.out.println("Logging start..."); // repeated
+    // business logic
+    System.out.println("Logging end...");   // repeated
+}
+public void updateOrder() {
+    System.out.println("Logging start..."); // repeated
+    // business logic
+    System.out.println("Logging end...");   // repeated
+}
+public void deleteOrder() {
+    System.out.println("Logging start..."); // repeated
+    // business logic
+    System.out.println("Logging end...");   // repeated
+}
+❌ Problem → Logging code is repeated everywhere.
+
+✅ Example With AOP
+With AOP, you move logging into an aspect:
+@Aspect
+@Component
+public class LoggingAspect {
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logBefore() {
+        System.out.println("Logging start...");
+    }
+
+    @After("execution(* com.example.service.*.*(..))")
+    public void logAfter() {
+        System.out.println("Logging end...");
+    }
+}
+Now your createOrder(), updateOrder(), deleteOrder() only contain business logic.
+Spring automatically adds logging before and after method calls.
+
+✅ Analogy
+Think of AOP like CCTV in a building:
+Instead of placing one security guard in every room (repeating effort),
+You install one CCTV system (aspect) that watches all rooms automatically.
+
+👉 So in an interview, you can say:
+"AOP in Spring lets me separate repeated code like logging or security into a separate module (aspect) and apply it automatically, so my business logic stays clean."
+
+4.1 What is AOP?
+Aspect-Oriented Programming (AOP): A way to separate cross-cutting concerns from business logic.
+Cross-cutting concerns: Repeated logic that affects multiple modules
+Examples: Logging, Security, Transactions, Caching, Performance Monitoring, Exception Handling.
+AOP allows you to write such logic in one place (aspect) and apply it declaratively.
+
+4.2 AOP Concepts (Core Terminology)
+Term	Meaning
+Aspect	A module containing cross-cutting concern (e.g., @Aspect class for logging).
+Join Point	A point in the program execution where AOP can be applied (e.g., method execution).
+Advice	The action taken at a join point (e.g., logging, transaction).
+Pointcut	Expression that selects join points (e.g., all methods in a package).
+Weaving	Process of applying aspects to target objects.
+Proxy	Spring uses JDK Dynamic Proxies or CGLIB to apply AOP without modifying actual code.
+
+4.3 Types of Advice (Most Asked in Interviews)
+Advice	When it Runs	Example
+Before (@Before)	Before target method execution	Log input params
+After Returning (@AfterReturning)	After successful execution	Log return value
+After Throwing (@AfterThrowing)	If method throws exception	Log error
+After (Finally) (@After)	Always after method (success or exception)	Cleanup resources
+Around (@Around)	Wraps method execution (before + after)	Measure execution time, modify arguments
+
+4.4 Pointcut Expressions
+  Spring AOP uses AspectJ expression syntax.
+  Common designators:
+  execution(* com.example.service.*.*(..)) → any method in service package.
+  execution(public * *(..)) → any public method.
+  execution(* *(..)) → any method with any return type.
+  @annotation(MyAnnotation) → methods annotated with @MyAnnotation.
+
+4.6 Spring AOP Internals
+  Proxy-based AOP:
+  Spring AOP is proxy-based → wraps beans with proxies.
+  Uses JDK Dynamic Proxy (if interface exists) OR CGLIB (if no interface).
+  Runtime Weaving (Proxy-based): Spring AOP weaves aspects at runtime.
+
+  AspectJ vs Spring AOP:
+  Spring AOP = runtime, proxy-based, method-level only.
+  AspectJ = compile-time or load-time weaving, more powerful (supports field, constructor, etc.).
+
+4.7 Real-World Use Cases
+Logging: Log method entry/exit.
+Security: Check authentication/authorization before executing a method.
+Transactions: Mark methods @Transactional (Spring uses AOP behind the scenes).
+Caching: Cache method results (@Cacheable uses AOP).
+Performance Monitoring: Measure method execution time.
+
+4.8 Pros & Cons
+✅ Advantages:
+Separation of concerns (business logic vs cross-cutting logic).
+Reduces boilerplate code.
+Easy to apply consistently across app.
+⚠️ Disadvantages:
+Debugging can be harder (logic runs outside actual code).
+Limited compared to AspectJ (method execution only)
+
+4.9 Common Interview Questions
+What is AOP in Spring? Difference between OOP and AOP?
+What are the types of advice in AOP?
+What is the difference between JoinPoint and Pointcut?
+How does Spring implement AOP (JDK Proxy vs CGLIB)?
+Difference between Spring AOP and AspectJ?
+Real-world examples where you would use AOP.
+How does @Transactional internally work? (→ via AOP proxy).
+What is weaving and when does it happen in Spring?
+
+10. One-Line Crib Notes for Interview
+AOP = clean way to apply cross-cutting concerns.
+Aspect = class with advices.
+Advice = action (before, after, around).
+Pointcut = where advice applies.
+Spring AOP = proxy-based, runtime, method-level only.
+AspectJ = more powerful, compile/load-time weaving.
+Real-world: logging, security, transactions, caching.
+
+Pro tip for interview: if asked "Have you used AOP?" you can mention:
+@Transactional (transaction management)
+@Cacheable (caching)
+Custom @Aspect for logging execution time.
+
+5. How does @Transaction internally works?
+5.1. What happens when you put @Transactional on a method/class?
+Spring sees the annotation during bean creation (via TransactionAnnotationParser).
+It creates a proxy object (using JDK dynamic proxies or CGLIB) that wraps your bean.
+This proxy intercepts method calls → checks if the method/class has @Transactional.
+
+5.2. Proxy workflow when you call a transactional method
+You call service.saveUser().
+The proxy intercepts the call before your real method runs.
+The proxy delegates to TransactionInterceptor, which:
+Looks at the transaction metadata (propagation, isolation, timeout, readOnly).
+Talks to the PlatformTransactionManager (e.g., DataSourceTransactionManager for JDBC).
+TransactionManager:
+Starts a new transaction OR joins an existing one.
+Sets up a connection with proper auto-commit=false.
+Your actual method (saveUser()) executes.
+After execution:
+If no exception → commit.
+If runtime exception → rollback (default behavior).
+(Checked exceptions rollback only if configured).
+
+5.3 Key Notes
+AOP Proxy: That’s why only public methods are transactional (by default). Calls to this.saveUser() inside the same class won’t go through proxy.
+Thread-bound transaction: Spring binds the connection to the current thread using TransactionSynchronizationManager.
+Commit/Rollback happens at the proxy level, not inside your method.
+
+👉 So in one line:
+@Transactional works by wrapping your bean in an AOP proxy that starts/commits/rolls back transactions around method execution, using a TransactionManager.
+
+5.4 Example
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class EngineerService {
+
+    private final EngineerRepository repo;
+
+    public EngineerService(EngineerRepository repo) {
+        this.repo = repo;
+    }
+
+    // Transactional method
+    @Transactional
+    public Engineer createEngineerWithRollback(String name, String skill) {
+        Engineer e = new Engineer();
+        e.setName(name);
+        e.setSkill(skill);
+        repo.save(e);
+
+        // simulate error → triggers rollback
+        if (true) {
+            throw new RuntimeException("Simulated Exception → triggers rollback");
+        }
+
+        return e;
+    }
+}
+
+5.6 What Happens Internally
+
+Spring creates a proxy around EngineerService.
+When you call createEngineerWithRollback(), instead of calling it directly, you actually call the proxy method.
+The proxy starts a transaction before executing the method.
+If the method completes successfully → commit.
+If it throws a runtime exception → rollback.
+So AOP proxy is the mechanism behind @Transactional.
+
+5.7 Analogy:
+    Think of proxy as a bank manager assistant:
+    Before giving you money (running method), he opens a vault (transaction).
+    If everything goes fine, he locks vault safely (commit).
+    If robbery/alarm (exception), he resets vault to previous state (rollback).
+
+5.8 How the Proxy Handles the Call:
+    When you call a transactional method:
+    Proxy intercepts the call.
+    The TransactionInterceptor checks metadata from @Transactional (like isolation, propagation, rollback rules).
+    It asks the PlatformTransactionManager (like DataSourceTransactionManager or JpaTransactionManager) to:
+    Start a new transaction OR
+    Join an existing one (depending on Propagation type).
+    Your actual method executes inside that transaction context.
+    After method returns:
+    If it completes successfully, interceptor tells TransactionManager → commit.
+    If it throws a runtime exception (or checked exception marked as rollbackFor), interceptor tells TransactionManager → rollback.
+
+6. Explain @SpringbootApplication ?
+@SpringBootConfiguration
+Same as @Configuration.
+Tells Spring that this class contains bean definitions (methods annotated with @Bean).
+@Configuration is an annotation in Spring.
+It marks a class as a configuration class (like a replacement for applicationContext.xml).
+Inside such a class, you can write methods with @Bean → each method creates and returns a Spring-managed bean.
+Spring will automatically pick them up and put them in the ApplicationContext.
+Marks a class as a Spring config class, where methods annotated with @Bean create beans for the Spring container.
+
+If you ever want a custom bean:
+@SpringBootApplication
+public class MyApp {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MyApp.class, args);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+👉 Here PasswordEncoder is not auto-configured, so you define it.
+✅ Simplified answer for interview:
+@SpringBootApplication tells Spring Boot:
+"This is my main configuration class."
+It will auto-configure most beans for me.
+I can still define custom @Bean methods if I need to override or add extra beans.
+
+@EnableAutoConfiguration
+Tells Spring Boot to automatically configure beans based on classpath dependencies.
+Example:
+If spring-boot-starter-web is in the classpath → it will auto-configure Tomcat, DispatcherServlet, etc.
+    Tomcat:
+    ➡️ Tomcat is the default embedded web server in Spring Boot that provides the servlet container to run and serve web applications.
+    DispatcherServlet:
+    ➡️ DispatcherServlet is the front controller in Spring MVC that receives all incoming HTTP requests and delegates them to the appropriate controller/handler.
+If spring-boot-starter-data-jpa is in the classpath → it will auto-configure EntityManagerFactory, DataSource, TransactionManager, etc.
+    EntityManagerFactory
+    ➡️ Creates and manages EntityManager instances which interact with the database in JPA.
+    DataSource
+    ➡️ Represents the database connection pool configuration (URL, username, password, driver).
+    TransactionManager
+    ➡️ Manages database transactions (commit/rollback) across multiple operations, ensuring data consistency.
+
+@ComponentScan
+Scans the current package and its subpackages for components (@Component, @Service, @Repository, @Controller, etc.).
+This way, you don’t have to register beans manually
+
+
+7. - Explain Dependency Injection, Autowired?
+Dependency Injection (DI)
+👉 Instead of a class creating its own dependencies, Spring injects them for you.
+Without DI
+class Car {
+    private Engine engine = new Engine(); // Car creates Engine
+}
+
+With DI
+class Car {
+    private Engine engine;  // Car depends on Engine, but doesn’t create it
+
+    public Car(Engine engine) {
+        this.engine = engine; // Spring injects Engine here
+    }
+}
+➡️ Benefit: Loose coupling (easy to test, maintain, and swap implementations).
+
+@Autowired
+
+👉 Spring’s way to automatically inject dependencies.
+@Service
+public class CarService {
+
+    @Autowired   // Spring will provide Engine bean automatically
+    private Engine engine;
+
+    public void startCar() {
+        engine.start();
+    }
+}
+@Autowired can be used on:
+Constructor (best practice in modern Spring)
+Setter method
+Field (works, but less recommended)
+
+✅ In one line interview answer:
+DI: Design pattern where Spring provides required dependencies instead of creating them manually.
+@Autowired: Annotation that tells Spring to inject a matching bean automatically.
+
+Spring supports 3 types of DI: field, setter, and constructor.
+Field injection is simplest but not recommended (hard to test, hidden deps).
+Setter injection is good for optional dependencies.
+Constructor injection is the best practice → makes dependencies explicit, supports immutability, and easier for unit testing.
+
+8. - What is the difference between inject and autowired?
+🔹 @Autowired (Spring-specific)
+Package: org.springframework.beans.factory.annotation.Autowired
+Provided by: Spring framework.
+Behavior:
+By default, it autowires by type (looks for a matching bean by type).
+If multiple beans of the same type exist → requires @Qualifier or bean name.
+required=true by default → will throw exception if no matching bean is found.
+
+🔹 @Inject (Standard Java)
+Package: javax.inject.Inject (part of JSR-330 standard, not Spring-specific).
+Provided by: Java Dependency Injection specification (Jakarta).
+Behavior in Spring: Works almost the same as @Autowired, since Spring supports JSR-330 annotations.
+No required attribute (unlike @Autowired).
+Usually used when you want your code to be framework-agnostic (portable across DI containers, not tied to Spring).
+
+🔹 Key Differences (Interview One-Liners):
+@Autowired → Spring-specific, has more features (e.g., required=false).
+@Inject → Standard Java (JSR-330), no Spring dependency.
+Both perform dependency injection, but @Autowired gives more fine-grained control in Spring
+
+9. - What Design patterns are used in Spring Boot?
+✅ Design Patterns used in Spring Boot
+Singleton Pattern
+Spring beans by default are singleton-scoped (one instance per Spring container).
+Manages memory and consistency.
+Factory Pattern
+The BeanFactory and ApplicationContext act as factories to create and manage beans.
+Prototype Pattern
+When you mark a bean as @Scope("prototype"), a new instance is created each time it’s requested.
+Proxy Pattern
+Used in AOP (Aspect Oriented Programming) for cross-cutting concerns like logging, transactions, security.
+Also in Spring Security (method-level security).
+Observer Pattern
+Implemented in the Spring Events mechanism (ApplicationEventPublisher, @EventListener).
+Helps components communicate in a loosely coupled way.
+Decorator Pattern
+Used with BeanPostProcessor and @Transactional where additional behavior is "wrapped" around a bean.
+Template Method Pattern
+Used in JdbcTemplate, RestTemplate, JpaTemplate → they handle the boilerplate and let you focus on the custom logic.
+Builder Pattern
+Used in many places like MockMvcBuilders, ResponseEntity, or Lombok’s @Builder with Spring Boot DTOs.
+Adapter Pattern
+Spring MVC uses HandlerAdapter to map requests to controllers in a uniform way.
+Dependency Injection (DI) → not a GoF pattern, but a fundamental principle
+Achieved via @Autowired, @Inject, or constructor injection.
+
+✅ Interview-friendly Summary:
+"Spring Boot internally uses many design patterns. Singleton for beans, Factory via BeanFactory, Proxy for AOP and Security, Observer for events,
+Template Method in JDBC/REST templates, Adapter in MVC, and Decorator in transactions, builder in lombork
+ These patterns make Spring Boot flexible, extensible, and loosely coupled."
+
+10.- What are Spring Boot annotations?
+Spring Boot makes heavy use of annotations to simplify configuration, reduce boilerplate, and enable declarative programming.
+✅ Interview Tip: If asked — “Why so many annotations in Spring Boot?”
+👉 Because annotations help achieve inversion of control, declarative programming, and reduce XML configuration.
+
+11. - BeanFactory vs ApplicationContext, Eager and Lazy loading?
+BeanFactory vs ApplicationContext
+BeanFactory
+Core container, responsible for managing beans.
+Uses lazy loading (beans created only when requested).
+Lightweight → good for memory-constrained apps.
+Provides only basic DI features.
+
+ApplicationContext
+Advanced container built on top of BeanFactory.
+Uses eager loading by default (beans created at startup).
+Provides enterprise features: event propagation, internationalization (i18n), AOP, bean post-processors, etc.
+Recommended in Spring Boot apps.
+
+Eager vs Lazy Loading
+Eager Loading (default in ApplicationContext):
+All singleton beans are created at application startup.
+Ensures faster runtime performance (beans ready in advance).
+Increases startup time & memory usage.
+
+Lazy Loading (default in BeanFactory, or via @Lazy in Spring Boot):
+Beans created only when first requested.
+Saves memory and improves startup time.
+May cause slight delay when bean is accessed first time.
+
+✅ Quick One-liner Summary (for interviews):
+BeanFactory = basic DI container, lazy loading.
+ApplicationContext = advanced container with enterprise features, eager loading by default.
+Eager = faster runtime, slower startup; Lazy = faster startup, slower first use.
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class EagerBean {
+
+    public EagerBean() {
+        System.out.println("EagerBean Initialized!");
+    }
+
+    public void hello() {
+        System.out.println("Hello from EagerBean");
+    }
+}
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
+@Component
+@Lazy
+public class LazyBean {
+
+    public LazyBean() {
+        System.out.println("LazyBean Initialized!");
+    }
+
+    public void hello() {
+        System.out.println("Hello from LazyBean");
+    }
+}
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+@Component
+public class TestRunner implements CommandLineRunner {
+
+    @Autowired
+    private EagerBean eagerBean;
+
+    @Autowired
+    private LazyBean lazyBean; // Lazy bean injected but not yet initialized
+
+    @Override
+    public void run(String... args) {
+        System.out.println("Inside CommandLineRunner...");
+
+        // Eager bean was already created at startup
+        eagerBean.hello();
+
+        // Lazy bean created only now (when first used)
+        lazyBean.hello();
+    }
+}
+
+
+12. What is cascading in Spring Boot?
+Definition: Cascading means that a persistence operation (like persist, merge, remove, refresh, detach) applied to one entity
+ also gets automatically applied to its related entities.
+Purpose: It helps avoid writing repetitive code for saving/updating/deleting associated objects.
+
+@Entity
+public class Customer {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String name;
+
+    // Customer can have many orders
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    private List<Order> orders = new ArrayList<>();
+}
+
+@Entity
+public class Order {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String product;
+
+    @ManyToOne
+    private Customer customer;
+}
+--------------
+Customer customer = new Customer();
+customer.setName("John");
+
+Order order1 = new Order();
+order1.setProduct("Laptop");
+order1.setCustomer(customer);
+
+Order order2 = new Order();
+order2.setProduct("Phone");
+order2.setCustomer(customer);
+
+customer.getOrders().add(order1);
+customer.getOrders().add(order2);
+
+// Only saving customer, but orders will also be saved
+customerRepository.save(customer);
+
+🔹 Types of Cascade
+PERSIST → Saves child when parent is saved.
+MERGE → Updates child when parent is updated.
+REMOVE → Deletes child when parent is deleted.
+REFRESH → Refreshes child when parent is refreshed from DB.
+DETACH → Detaches child when parent is detached from persistence context.
+ALL → Applies all above operations
+
+📝 Interview one-liner
+Cascading in Spring Boot (JPA) means that persistence operations performed on a parent entity are automatically propagated to its child entities,
+ reducing boilerplate code for saving, updating, or deleting related objects.
+
+13. - Controller vs RestController?
+1. @Controller
+Used in Spring MVC web applications.
+Marks a class as a controller that can handle HTTP requests.
+Usually returns a View (like JSP, Thymeleaf, etc.) along with Model data.
+You need to annotate methods with @ResponseBody if you want to return JSON/XML directly.
+
+@Controller
+public class MyController {
+
+    @GetMapping("/hello")
+    @ResponseBody   // Needed to return raw JSON/string
+    public String sayHello() {
+        return "Hello from Controller";
+    }
+}
+
+2. @RestController
+Shortcut for @Controller + @ResponseBody.
+Used for REST APIs (returns JSON/XML directly instead of rendering views).
+No need to add @ResponseBody on every method.
+@RestController
+public class MyRestController {
+    @GetMapping("/hello")
+    public String sayHello() {
+        return "Hello from RestController"; // Returned as JSON response
+    }
+}
+
+14. - What are @Component and @Bean annotations?
+@Component
+Purpose: Marks a class as a Spring-managed bean.
+When to use: When you want Spring to automatically detect and register your class as a bean during component scanning (@ComponentScan).
+@Component
+public class PaymentService {
+    public void processPayment() {
+        System.out.println("Processing payment...");
+    }
+}
+@Bean
+Purpose: Tells Spring that a method will return a bean that should be managed by the Spring container.
+When to use: When you need manual control over how a bean is created (e.g., 3rd party classes, custom initialization).
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public PaymentService paymentService() {
+        return new PaymentService(); // manually creating the bean
+    }
+}
+Key Differences
+Feature	@Component	@Bean
+Usage	Placed on class	Placed on method
+Bean Creation	Automatic via classpath scanning	Manual via method return
+Best for	Your own classes	External classes / fine-grained bean creation
+Configuration	Requires @ComponentScan	Requires @Configuration
+
+15. RestTemplate vs webClient?
+✅ Key Differences
+Feature	RestTemplate (Old)	WebClient (New)
+Style	Blocking (Sync)	Non-blocking (Async)
+Performance	Not suitable for high concurrency	Scales better under load
+API	Imperative	Reactive
+Status	Deprecated	Recommended
+
+So in interviews:
+Say RestTemplate is legacy (synchronous).
+WebClient is modern (reactive, non-blocking), and should be used going forward.
+
+Using @RestController and using RestTemplate are two different things:
+@RestController → Marks your class as a REST API controller (your app exposes endpoints).
+RestTemplate / WebClient → Are clients used when your app calls some other API.
+So:
+✅ If your app was only exposing APIs (e.g., @GetMapping("/users")) but not calling external APIs,
+    you might not have used RestTemplate or WebClient at all.
+✅ If your app did make outbound API calls, then you need to check:
+Did you see code like restTemplate.getForObject(...)? → You used RestTemplate.
+Did you see code like WebClient.create().get()...? → You used WebClient.
+👉 @RestController just means your app was a server for REST APIs. It doesn’t imply which client library you used (or if you used one at all).
+
+16. - Used Cassandra or Redis or Elasticsearch?
+“I haven’t worked with Cassandra/Redis/Elasticsearch directly in my last project. But I do understand their purpose and differences:
+Cassandra is good for high-volume, distributed NoSQL storage. (planning for storing flight position data for given tailId)
+Redis is mainly used as an in-memory key-value store and cache. ( for storing tailIds in-memory and their internet-connectivityStatus)
+Elasticsearch is optimized for full-text search and analytics. (used in splunk)
+I’ve worked with relational databases and caching layers, so I can quickly pick up whichever is needed.”
+
+17. - PostMapping vs RequestMapping?
+@RequestMapping
+A general-purpose annotation used to map HTTP requests to handler methods or classes.
+Can be applied at both class level and method level.
+It is flexible: supports all HTTP methods (GET, POST, PUT, DELETE, etc.) via the method attribute.
+
+@RequestMapping(value = "/hello", method = RequestMethod.GET)
+public String sayHello() {
+    return "Hello World!";
+}
+
+@PostMapping
+A specialized version of @RequestMapping that is shortcut for POST requests.
+Improves readability and reduces boilerplate.
+@PostMapping("/createUser")
+public String createUser(@RequestBody User user) {
+    return "User created!";
+}
+✅ Key Differences
+Feature	@RequestMapping	@PostMapping
+Purpose	General-purpose mapping for any HTTP method	Specifically maps only POST requests
+Readability	More verbose (requires method = RequestMethod.POST)	Cleaner & concise
+Usage	Can define multiple HTTP methods in one mapping	Only for POST
+
+18. - Path variable vs query parameter vs path parameter vs request body?
+1. Path Variable (@PathVariable)
+Part of the URL path itself.
+Used when the value is mandatory and uniquely identifies a resource.
+@GetMapping("/users/{id}")
+public User getUser(@PathVariable String id) {
+    return userService.findById(id);
+}
+
+2. Query Parameter (@RequestParam)
+Part of the URL after the ?.
+Often optional and used for filtering, sorting, or pagination.
+@GetMapping("/users")
+public List<User> getUsers(@RequestParam(required = false) String role) {
+    return userService.findByRole(role);
+}
+GET /users?role=admin
+
+3. Path Parameter
+It’s the same as Path Variable — just different terminology.
+REST APIs sometimes call placeholders in the URL path "path parameters."
+Example: /users/{id} → {id} is a path parameter.
+In Spring Boot, we implement it with @PathVariable
+
+4. Request Body (@RequestBody)
+Used for sending structured data (like JSON, XML) in the HTTP request body.
+Usually for POST, PUT, PATCH.
+Example:
+@PostMapping("/users")
+public User createUser(@RequestBody User user) {
+    return userService.save(user);
+}
+✅ Summary Table
+Aspect	Path Variable	Query Parameter	Request Body
+Location	URL path	After ? in URL	Inside HTTP body
+Usage	Resource ID	Filtering, optional	Data payload
+Annotation in Spring	@PathVariable	@RequestParam	@RequestBody
+Example URL	/users/123	/users?role=admin	Body: JSON/XML
+
+“When to use what?” → Use Path Variable for identifying a resource, Query Param for filters/options, Request Body for sending full objects.
