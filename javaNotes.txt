@@ -362,3 +362,336 @@ Use an abstract class when you want to provide some shared functionality and lea
 hashCode() is one of those methods in Java that you rarely call directly in day-to-day coding, but it’s used heavily under the hood in real software development.
 
 🔑 Where hashCode() is actually used in real-world software dev:
+1. Hash-based Collections (Most Common)
+HashMap, HashSet, Hashtable
+When you insert an object into a HashMap as a key:
+Java calls hashCode() to find the bucket (index) in the hash table.
+If multiple keys land in the same bucket, equals() is used to resolve collisions.
+
+Map<Employee, String> empMap = new HashMap<>();
+empMap.put(new Employee(101, "Pawan"), "Developer");
+
+Employee.hashCode() decides which bucket the entry goes into.
+If another Employee with same ID comes, equals() ensures it’s treated as the same key.
+
+2. Caching
+Many caching frameworks (like Ehcache, Caffeine, or even Spring Cache) use hash maps internally.
+When caching an object by key, hashCode() is used to quickly locate that object.
+
+3. ORM Frameworks (Hibernate, JPA)
+Entities often end up in HashSet or HashMap inside the persistence context.
+Hibernate may rely on hashCode() to track whether an entity is already managed.
+That’s why it’s critical to override equals() and hashCode() correctly for entity classes.
+
+4. Compiler & Runtime Internals
+String.hashCode() is used everywhere:
+Java intern pool.
+When strings are stored in maps/sets (super common in real apps).
+That’s why String.hashCode() is cached for performance.
+
+8. what is bucket, what is collision , in relation to hashcode()?
+🪣 1. What is a bucket?
+Think of a HashMap like a giant cupboard with many boxes (buckets).
+Each bucket is just a slot or container where entries can be stored.
+When you put a key–value pair into a HashMap, Java doesn’t just put it anywhere. It calculates:
+bucketIndex = hashCode(key) % numberOfBuckets
+👉 So hashCode() decides which bucket the key–value pair goes into.
+
+Map<String, Integer> map = new HashMap<>();
+map.put("Dog", 1);
+map.put("Cat", 2);
+map.put("Cow", 3);
+
+Suppose hashCode("Dog") = 1009, hashCode("Cat") = 2008, hashCode("Cow") = 3017.
+HashMap has (say) 16 buckets.
+Then:
+"Dog" → 1009 % 16 = 1 → goes into bucket #1
+"Cat" → 2008 % 16 = 8 → goes into bucket #8
+"Cow" → 3017 % 16 = 1 → goes into bucket #1
+Now both "Dog" and "Cow" are in the same bucket. 👇 That’s a collision.
+
+💥 2. What is a collision?
+A collision happens when two different keys map to the same bucket.
+Example above: "Dog" and "Cow" both ended up in bucket #1.
+HashMap handles this using a LinkedList or Tree (since Java 8) inside each bucket:
+If multiple keys go to the same bucket, Java stores them in a small list/tree inside that bucket.
+When you search for a key, it goes to the correct bucket first (fast), then checks each item inside using equals().
+
+🔎 3. Visual Example
+HashMap with 4 buckets
+[0] → empty
+[1] → ("Dog", 1) → ("Cow", 3)   // collision here
+[2] → empty
+[3] → ("Cat", 2)
+"Dog" and "Cow" have different hashCode() values but after % 4, they both landed in bucket 1.
+This is a collision. HashMap will then compare "Dog".equals("Cow") to distinguish them.
+
+⚡ Why it matters in real software?
+If your hashCode() is badly written (e.g., always returns 1), then all keys will land in the same bucket →
+ HashMap becomes a LinkedList → lookup is very slow (O(n) instead of O(1)).
+A good hashCode() spreads keys across buckets evenly → fast lookups.
+
+👉 In short:
+Bucket = storage slot in HashMap where entries live.
+Collision = when 2 different keys map to the same bucket.
+hashCode() decides bucket; equals() decides if keys are actually the same.
+
+---------------------------------------------------------------------------------------------
+
+20/08/2025
+
+1. What is a serializable , give example?
+In Java, Serializable is a marker interface (java.io.Serializable) used to indicate that a class’s objects can be converted into a byte stream (serialization) and later
+restored back into a copy of the object (deserialization).
+This is useful when:
+You want to save an object’s state to a file/database.
+You want to send an object across a network (e.g., in distributed systems, RMI, sockets).
+You want to cache objects in memory and restore them later.
+
+🔹 Key Points
+Serializable is a marker interface → it has no methods.
+Once a class implements Serializable, all its non-transient and non-static fields are serialized automatically.
+transient keyword → prevents a field from being serialized.
+serialVersionUID is used to ensure version compatibility during deserialization.
+
+e.g., SerializationExample.java
+Notice that after deserialization, password is null because it was marked transient and thus not serialized.
+
+✅ In short:
+Serialization = saving an object state into bytes.
+Deserialization = reconstructing object from bytes.
+Serializable is the interface that marks a class eligible for this process.
+
+🎮 Real-life Analogy: Saving a Video Game
+Imagine you’re playing a game (say GTA).
+Your character’s state (location, health, weapons, score, mission progress) is stored in memory while you’re playing.
+If you quit the game without saving → you lose progress.
+If you save the game, the system takes a "snapshot" of your character’s state and writes it into a file.
+Later, when you load the game, it restores your character exactly where you left off.
+👉 This is exactly what serialization (save) and deserialization (load) does in Java.
+
+🔹 Mapping to Java
+Game character = Java object (Student s1).
+Save game = Serialize object → write it into a file (student.ser).
+Load game = Deserialize → recreate object from the file.
+transient fields = things not saved (e.g., temporary boosts or unsavable session data).
+serialVersionUID = game version control (so an old save file works only if the new game version is compatible).
+
+🌐 Distributed Systems Analogy
+Imagine two Java applications running on different machines:
+App A: An e-commerce server.
+App B: A payment service.
+When App A wants to send a Java object (say, a PaymentRequest object) over the network to App B:
+App A can’t just ship the object as-is (objects live in JVM memory, which is not shareable).
+Instead, App A serializes the object into a byte stream.
+The byte stream is sent over the network (TCP/HTTP/Message Queue etc.).
+App B receives the byte stream and deserializes it back into the original Java object (PaymentRequest).
+
+📌 Interview takeaway
+Serialization is crucial for:
+RMI (Remote Method Invocation)
+Distributed caching (e.g., sending objects across nodes)
+Messaging systems (Kafka, RabbitMQ, etc.)
+
+-------------------------------------------------------
+
+2. what are default & static methods in interface and their inheritance?
+Default Methods in Interface
+Introduced in Java 8.
+Declared with the default keyword.
+Provide a method body inside an interface (previously impossible).
+Purpose: allow interface evolution without breaking old code (backward compatibility).
+
+Static Methods in Interface
+Also introduced in Java 8.
+Declared with static keyword.
+Can be called using the interface name only (not via implementing class/object).
+Not inherited by implementing classes.
+
+Inheritance Rules
+(A) Default methods
+1. Class wins over interface
+If a class (or superclass) has a method with the same signature, it overrides the interface’s default method.
+class Car {
+    public void stop() {
+        System.out.println("Car stopped");
+    }
+}
+
+interface Vehicle {
+    default void stop() { System.out.println("Vehicle stopped"); }
+}
+
+class Honda extends Car implements Vehicle {}
+public class Test {
+    public static void main(String[] args) {
+        new Honda().stop();  // 👉 Output: "Car stopped" (class wins)
+    }
+}
+
+
+2. Conflict resolution if multiple interfaces provide the same default method
+If a class implements two interfaces with the same default method, the compiler forces you to override and resolve the conflict.
+interface Vehicle {
+    default void stop() { System.out.println("Vehicle stopped"); }
+}
+
+interface Machine {
+    default void stop() { System.out.println("Machine stopped"); }
+}
+
+class Car implements Vehicle, Machine {
+    @Override
+    public void stop() {   // must override to resolve conflict
+        System.out.println("Car stopped");
+    }
+}
+
+B) Static methods
+Not inherited by implementing class.
+Always called with the interface name.
+If two interfaces have static methods with the same name → no conflict (since they are always called with interface name).
+interface A {
+    static void show() { System.out.println("A.show"); }
+}
+
+interface B {
+    static void show() { System.out.println("B.show"); }
+}
+
+class Demo implements A, B {
+    public void test() {
+        // show();   // ❌ Not allowed
+        A.show();    // ✅ Calls A's static method
+        B.show();    // ✅ Calls B's static method
+    }
+}
+
+✅ Summary Table
+Feature	Default Method	Static Method
+Keyword	default	static
+Inherited?	Yes (but overridden if class defines same method)	❌ No
+Call syntax	object.method()	InterfaceName.method()
+Purpose	Add new methods without breaking existing code	Utility/helper methods inside interface
+Conflict?	Yes, if multiple interfaces define same method	No conflict (always tied to interface name)
+
+⚡ Golden Rule for Interview:
+Class methods > Interface default methods.
+Conflicting default methods → must override.
+Static methods in interfaces are not inherited.
+
+3. what would happen if we dont override equals() and hashcode() method?
+🔹 What happens if you don’t override equals() and hashCode()?
+By default, every class in Java inherits these methods from Object
+
+public boolean equals(Object obj) {
+    return (this == obj);   // compares memory reference
+}
+
+public int hashCode() {
+    return some unique integer for the object’s memory address
+}
+
+So:
+
+equals() → only returns true if both references point to the same object in memory.
+hashCode() → generates a unique integer based on memory location (not on actual object data)
+
+So without overriding these methods,
+👉 Even though s1 and s2 have the same data, equals() returns false because it checks memory reference, not field values.
+👉 Hash codes are different because they’re tied to object identity.
+
+🔹 Problem with Collections
+If you add objects to a HashSet or HashMap without overriding equals() and hashCode(),
+duplicates will not be detected.
+HashSet<Student> set = new HashSet<>();
+set.add(new Student(1, "Pawan"));
+set.add(new Student(1, "Pawan"));
+System.out.println(set.size());  // 2 ❌ (expected 1)
+
+
+🔹 Correct way: Override both
+✅ Summary (Interview Answer)
+
+If we don’t override equals() and hashCode(), object equality is based on reference (memory location), not data.
+Collections like HashMap, HashSet, Hashtable will fail to work properly with duplicates.
+To ensure logical equality (based on object state), we must override both equals() and hashCode().
+4. What happens if you override only equals() but not hashCode()?
+Java’s contract between equals() and hashCode() (from the Object class docs):
+If two objects are equal (a.equals(b) == true), then they must have the same hashCode().
+If two objects are not equal, they may or may not have different hash codes (collisions are allowed).
+👉 If you break this contract (by overriding equals() but not hashCode()), collections like HashMap, HashSet, Hashtable will misbehave.
+
+Example: Overriding only equals()
+
+import java.util.*;
+
+class Student {
+    int id;
+    String name;
+
+    Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    // ✅ equals overridden
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Student)) return false;
+        Student s = (Student) o;
+        return id == s.id && name.equals(s.name);
+    }
+
+   @override
+    public boolean equals(Object o){
+        if(this == o) return true;
+        if (!(o instance of Student)) return false;
+        Student s = (Student) o;
+        return s.id == id && name.equals(s.name);
+
+    }
+    // ❌ hashCode NOT overridden
+}
+
+public class Test {
+    public static void main(String[] args) {
+        Student s1 = new Student(1, "Pawan");
+        Student s2 = new Student(1, "Pawan");
+
+        System.out.println(s1.equals(s2)); // true ✅
+
+        HashSet<Student> set = new HashSet<>();
+        set.add(s1);
+        set.add(s2);
+
+        System.out.println(set.size()); // ❌ 2 (expected 1)
+    }
+}
+🔹 Why did this happen?
+HashSet uses hashCode() first to decide the bucket in the hash table.
+Since s1 and s2 have different default hash codes (from memory location),
+ they go into different buckets, even though equals() says they’re equal.
+Result: Duplicates sneak in.
+
+🔹 What if you override only hashCode() but not equals()?
+👉 Then objects with same data may have the same hash code,
+ but since equals() still checks memory reference, duplicates won’t be detected eithe
+
+ @Override
+public int hashCode() {
+    return Objects.hash(id, name);
+}
+// ❌ no equals()
+s1.hashCode() == s2.hashCode(); // true
+s1.equals(s2); // false
+✅ Correct Practice
+
+👉 Always override both equals() and hashCode() together.
+This is why IDEs (like IntelliJ/Eclipse) generate them in pairs when you do Generate → equals() and hashCode().
+
+⚡ Interview-ready one-liner:
+If you override only equals() without hashCode(), c
+collections like HashSet and HashMap will allow duplicates because the contract between equals() and hashCode() is broken.
+
