@@ -695,3 +695,376 @@ This is why IDEs (like IntelliJ/Eclipse) generate them in pairs when you do Gene
 If you override only equals() without hashCode(), c
 collections like HashSet and HashMap will allow duplicates because the contract between equals() and hashCode() is broken.
 
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+1. map vs flatmap
+🔹 1. What is flatMap?
+map() → transforms each element into one output.
+flatMap() → transforms each element into a Stream of outputs, then flattens (merges) all those streams into one big stream.
+Think:
+👉 map = 1-to-1
+👉 flatMap = 1-to-many, then flattened
+
+🔹 2. Example without flatMap
+Suppose you have a list of sentences:
+List<String> sentences = Arrays.asList("I love Java", "Streams are cool");
+using map:
+List<String[]> result = sentences.stream()
+                                 .map(s -> s.split(" "))
+                                 .toList();
+
+Now result is a List of String[] (a nested structure):
+[ ["I", "love", "Java"], ["Streams", "are", "cool"] ]  #########  stream of list of string
+
+🔹 3. With flatMap
+List<String> words = sentences.stream()
+                              .flatMap(s -> Arrays.stream(s.split(" ")))
+                              .toList();
+Output:
+["I", "love", "Java", "Streams", "are", "cool"] ##########  stream of string
+✨ Notice how the nested arrays are flattened into a single list of words.
+
+In short, we can say that if there is a Stream of List of <Data Type> before flattening, then on applying flatMap(),
+Stream of <Data Type> is returned after flattening.
+
+---------------------------------------------------------------
+
+what why and how concurrent modification exception?
+modecount?
+concurrent hashmpap vs normal hashmap?
+copyOnWriteArray vs normal array?
+synchronised map vs concurrent hashmap?
+compare and swap?
+
+Queues and stack implementation using linkedlist?
+set implementation in java?
+hashset impln in java?
+
+
+when it is called and when it is not? finalise().
+deprecation in java and its alternative in java?
+
+Memory model?
+
+Bean storage in JVM?
+
+Meta space (new version)
+
+How many null key are allowed in hashmap?
+
+------------------------------------------------------------------------------------------
+
+1. What is Autoboxing?
+Autoboxing is the automatic conversion performed by the Java compiler between a primitive type and its
+corresponding wrapper class.
+Example:
+int num = 5;
+Integer boxed = num;   // Autoboxing: int → Integer
+
+2. What is Unboxing?
+Unboxing is the reverse process where a wrapper class object is automatically converted into its corresponding primitive type.
+Example:
+Integer boxed = 10;
+int num = boxed;   // Unboxing: Integer → int
+
+3. Why was Autoboxing introduced?
+Before Java 5, you had to manually convert between primitives and wrapper classes.
+Integer i = new Integer(5);   // before Java 5
+int x = i.intValue();         // manual unboxing
+With autoboxing/unboxing (Java 5+), the compiler does it automatically, making code cleaner and less error-prone.
+
+4. Example in Collections (where autoboxing shines):
+Collections like ArrayList can only store objects, not primitives.
+List<Integer> list = new ArrayList<>();
+list.add(5);         // int → Integer (autoboxing)
+int val = list.get(0); // Integer → int (unboxing)
+
+5. Common Interview Traps with Autoboxing
+(a) Performance Issue
+Autoboxing creates extra objects → can cause memory overhead in large loops.
+Long sum = 0L;
+for (long i = 0; i < 1000000; i++) {
+    sum += i;   // Autoboxing & unboxing inside loop → performance hit
+}
+👉 Fix: use primitive long sum = 0;
+
+(b) NullPointerException with Unboxing
+Integer num = null;
+int val = num;  // Throws NullPointerException during unboxing
+👉 Always check for null before unboxing.
+
+(c) Equality Confusion
+Integer a = 100;
+Integer b = 100;
+System.out.println(a == b); // true (cached values -128 to 127)
+
+Integer x = 200;
+Integer y = 200;
+System.out.println(x == y); // false (different objects)
+👉 Use .equals() to compare wrapper objects, not ==.
+
+When you write Integer a = 100;, Java automatically converts the primitive int (100) into an Integer object.
+This is called autoboxing
+
+Integer Cache
+Java maintains a cache of Integer objects for values from -128 to 127.
+This means whenever you autobox a value in that range, Java reuses the same object from the cache instead of creating a new one.
+Integer a = 100;
+Integer b = 100;
+Both a and b point to the same cached object (since 100 is within -128 to 127).
+a == b  // true (same reference)
+
+Outside the Cache
+For values outside -128 to 127, Java does not reuse cached objects.
+Instead, it creates a new object each time.
+Integer x = 200;
+Integer y = 200;
+
+Both x and y are different objects (since 200 is outside the cache).
+So:
+x == y  // false (different references)
+
+Key takeaway
+== compares references (memory address), not values.
+.equals() compares the values inside the object.
+So:
+System.out.println(x.equals(y)); // true
+because both x and y hold the value 200.
+
+✅ Summary
+== → compares object references.
+.equals() → compares object values.
+Autoboxed integers from -128 to 127 are cached and reused
+
+✅ In summary:
+Autoboxing = primitive → wrapper automatically.
+Unboxing = wrapper → primitive automatically.
+Pros: Cleaner code, easier collection handling.
+Cons: Performance issues & NullPointerException risk.
+
+-------------------------------------------------------------------------------------------------
+
+JVM memory model
+
+1. What are the different memory areas allocated by JVM?
+Heap – Stores objects and instance variables. Managed by Garbage Collector.
+he Heap is typically divided into two main areas: The Young Generation and the Old Generation (also known as the Tenured Generation).
+The Young Generation is further divided into the Eden Space and Survivor Spaces,
+while the Old Generation contains long-lived objects that have survived multiple garbage collection cycles.
+
+Stack – Stores method calls, local variables, and references. Each thread has its own stack.
+Method Area (Metaspace in Java 8+) – Stores class metadata, static variables, and method code.
+PC Register – Holds the current instruction address of a thread.
+Native Method Stack – Used for native (C/C++) method calls.
+
+2. What is the difference between stack memory and heap memory?
+Stack: Thread-local, faster, stores primitives and references.
+Heap: Shared across threads, slower, stores actual objects.
+
+3. What is the role of the Garbage Collector in JVM?
+GC reclaims memory by removing objects that are no longer referenced, preventing memory leaks.
+
+4. What is a memory leak in Java?
+A memory leak occurs when objects are no longer used but still referenced (e.g., stored in a static collection), preventing GC from reclaiming them.
+give its example?
+
+5. What is OutOfMemoryError in Java?
+Thrown when JVM cannot allocate memory for new objects, even after GC. Example: java.lang.OutOfMemoryError: Java heap space.
+
+6. What is StackOverflowError in Java?
+Occurs when stack memory is exhausted, typically due to deep or infinite recursion.
+
+7. What is the difference between final, finally, and finalize()?
+final: Keyword for constants, preventing inheritance or method overriding.
+finally: Block in try-catch used for cleanup.
+finalize(): Method called before GC deletes an object (not reliable).
+
+8. What is the difference between strong, weak, soft, and phantom references?
+Strong: Normal references, prevent GC.
+Weak: Collected when no strong refs exist (WeakHashMap).
+Soft: GC removes them only when memory is low (good for caches).
+Phantom: Used to track object finalization before GC.
+??????
+search more
+
+9. How is String stored in memory?
+Strings are stored in the Heap. Literal strings go into the String pool inside the Method Area/Metaspace.
+
+10. Difference between PermGen and Metaspace?
+PermGen (till Java 7): Fixed size, stored class metadata.
+Metaspace (Java 8+): Resides in native memory, grows dynamically.
+
+11. How to tune JVM memory?
+Use JVM options:
+-Xms → initial heap size
+-Xmx → max heap size
+-Xss → stack size per thread
+-XX:MaxMetaspaceSize → max Metaspace size
+
+12. What is memory fragmentation in Java?
+When free memory is available but in non-contiguous blocks, making large allocations fail. JVM GC compacts memory to reduce fragmentation.
+
+13. How does Garbage Collector decide which objects to collect?
+GC uses reachability analysis (object graph traversal).
+Objects not reachable from GC roots (stack references, static variables, JNI references) are eligible for collection.
+example?
+
+14. What are Stop-the-World events?
+GC pauses all application threads while it reclaims memory, leading to performance impact.
+
+15. What is difference between Minor GC and Major GC?
+Minor GC: Cleans Young Generation (fast, frequent).
+Major/Full GC: Cleans Old Generation and sometimes entire heap (slower).
+
+16. What is the difference between Serial, Parallel, CMS, and G1 GC?
+Serial GC: Single-threaded, simple, best for small apps.
+Parallel GC: Multi-threaded, throughput focused.
+CMS (Concurrent Mark-Sweep): Low pause times, concurrent collection.
+G1 GC: Region-based, balances throughput and low-latency (default in Java 9+).
+more r & d?
+
+17. What is a memory barrier in Java?
+A memory barrier (or fence) is a JVM instruction that prevents reordering of reads/writes,
+ensuring thread visibility (used in volatile variables).
+
+18. What happens when you call System.gc()?
+It requests GC, but does not guarantee immediate collection. JVM decides when to run GC.
+
+19. How do you monitor memory usage in Java?
+  Tools: jconsole, jvisualvm, jmap, jstat
+  Code: Runtime.getRuntime().totalMemory(), freeMemory(), maxMemory()
+
+20. How do you prevent memory leaks in Java applications?
+Close resources (files, DB connections, sockets).
+Use weak references for caches.
+Avoid static collections holding large objects.
+Use profiling tools to detect leaks.
+
+-----------------------------------------------------------------------------------
+
+To the new interview new topics to be done!
+
+31/08/2025
+1. Hash table!
+Different hashing techniques, like division hashing, multiplicative hashing, and advanced methods like double hashing or chaining, spread keys more uniformly,
+which reduces collisions and improves overall hash table efficiency.
+Better hash functions and algorithms mean fewer collisions, leading to consistently faster lookups and updates in practice.
+
+2. Single linked list VS double linked list!
+A doubly linked list has nodes with pointers to both next and previous nodes, allowing bidirectional traversal, while a singly linked list only has next pointers,
+supporting one-way traversal. Doubly linked lists are preferred when frequent insertion, deletion,
+or navigation in both directions is needed; singly linked lists are ideal when memory efficiency and simple forward-only traversal suffice.
+
+Singly Linked List preferred when:
+   Memory usage is critical, as it uses less memory per node.
+   Data is primarily accessed sequentially in one direction (e.g., simple queues, stacks).
+   Implementing simple traversal with less overhead is sufficient.
+Doubly Linked List preferred when:
+   Frequent insertions and deletions occur at both ends (e.g., deques).
+   Bidirectional traversal is needed (e.g., navigation in browsers, undo functionality).
+   Complex data structures require backtracking or two-way iteration (e.g., certain tree or graph implementations).
+
+Two-way traversal in doubly linked lists lets insertion and deletion at both ends or any position happen more efficiently,
+since each node knows its previous and next nodes; this allows removals without needing a full traversal as required in singly linked lists.
+Deletion or insertion at a specific location is
+O(1)
+O(1) if a reference to the node is given, while singly linked lists may require
+O(n)
+O(n) time if the previous node is not known.
+
+3. Volatile keyword VS synchronized blocks
+In Java, the volatile keyword ensures that updates to a variable are immediately visible to all threads and prevents instruction reordering,
+guaranteeing memory visibility but not atomicity. In contrast, synchronized blocks provide both visibility and mutual exclusion,
+ensuring only one thread can access a critical section at a time, which is necessary for compound operations. Volatile is lighter and suitable for simple flags,
+while synchronized is needed for managing complex shared state with full consistency.
+
+Synchronisation can slow down performance,
+Instead we can use
+lock less operation,
+For example, AtomicInteger, CompareAndSwap
+
+4. SerialVersionUUID and serialization!
+Used for serialization
+It is used to maintain the version.
+Used to deserialize the same serialised object.
+
+Relying on auto-generated UIDs can break deserialization if the class is modified, as the UID changes with each structural update.
+Explicitly defining SerialVersionUID lets a class evolve (for example, adding fields) without breaking deserialization, as long as changes are compatible.
+Backward compatibility is preserved if the SerialVersionUID remains unchanged with non-breaking changes;
+older serialized objects can still be read by newer versions of the class.
+Without an explicit SerialVersionUID, even minor structural changes may cause deserialization failures due to mismatched auto-generated UIDs,
+making it harder to maintain backward compatibility over time.
+
+
+5. Transaction & isolation levels.
+READ COMMITTED allows transactions to see only committed data, preventing dirty reads and giving good performance,
+but still allows non-repeatable and phantom reads, so perfect consistency is not guaranteed.
+
+SERIALIZABLE provides the highest data consistency, making concurrent transactions appear as if executed sequentially,
+but greatly reduces performance due to locking, blocking, and reduced concurrency.
+
+Higher isolation levels improve data integrity but may slow down throughput, while lower levels boost performance at the risk of anomalies
+like non-repeatable or phantom reads.
+
+SERIALIZABLE: Example—when booking seats, two users cannot over-book due to strict isolation; each transaction is executed as if it were alone,
+preventing conflicting data writes and guaranteeing consistent results.
+
+READ COMMITTED: Example—bank account balance queries only show committed transactions,
+but a second query in the same transaction might see a different balance due to concurrent updates (non-repeatable reads)
+
+READ COMMITTED prevents dirty reads but allows non-repeatable reads, meaning repeated queries within the same transaction might return different results
+as data can be changed and committed by others in between. This level provides good efficiency and throughput for highly concurrent systems,
+making it a common default, but is not suitable if strong repeatable read consistency is required.
+
+
+6. Constructor injection VS Setter injection VS Field injection!
+Constructor Injection: Ensures all required dependencies are set, improves immutability, and supports testing well, but can get verbose with many parameters.
+Setter Injection: Allows optional dependencies and later modification, but can lead to mutable, partially-initialized objects.
+Field Injection: Simple and concise, but hides dependencies, makes testing harder, and relies on reflection, which is discouraged for production code.
+
+Constructor injection enforces that all dependencies are provided up front, making it easy to supply mock or fake objects during unit testing,
+and making missing dependencies fail fast at object creation.
+
+Setter or field injection can result in incomplete or hidden dependencies, making it harder to track, mock, or verify injected values in tests.
+This clarity and immutability from constructor injection leads to more predictable and reliable test code.
+
+Constructor injection ensures that all dependencies are provided at the time the bean is created,
+making the object fully initialized and immutable from the beginning of its lifecycle.
+Setter and field injection fill dependencies after bean instantiation, leading to a period where the bean might be only partially constructed,
+which can cause inconsistent state or errors if used too early.
+This immediate initialization sequence with constructor injection results in safer, more predictable beans,
+while setter/field injection may delay full readiness
+
+7. The N+1 select problem in Hibernate occurs when fetching a list of parent entities triggers 1 query for the parents and then N separate queries for their children,
+causing major performance issues. It arises due to default lazy loading of associations.
+Solutions include using fetch joins (JOIN FETCH), batch fetching with @BatchSize, subselect fetching,
+or entity graphs to load related data in fewer queries and avoid excessive database calls.
+
+Batching—in Hibernate via @BatchSize—groups child queries together, so instead of firing N queries, it fetches related data in fewer, larger batches,
+reducing database round-trips and improving performance.
+Alternatives include using JOIN FETCH for eager loading, entity graphs, or subselect strategies to load associations more efficiently.
+
+Hibernate manages batching by grouping multiple entity fetch operations into single queries using the @BatchSize annotation on collections or entities.
+You can also configure global batch size with the hibernate.default_batch_fetch_size property in your configuration file.
+Batch fetching reduces the number of round-trips to the database by retrieving records in chunks with SQL IN clauses,
+and tuning the batch size is essential for optimal performance.
+
+Hibernate manages transactions using its Transaction interface, letting developers begin, commit,
+or roll back transactions to ensure atomic operations and data integrity.
+Programmatic transaction management involves manual control in the code (using explicit calls to begin, commit, rollback),
+which increases flexibility but adds boilerplate and risk of human error.
+Declarative transaction management uses annotations (e.g., @Transactional) or configuration to handle transactions automatically,
+keeping business logic cleaner, reducing errors, and making transactional behavior easier to manage at scale.
+
+Isolation levels like READ COMMITTED or SERIALIZABLE, when set via annotations (@Transactional(isolation = Isolation.SERIALIZABLE)),
+control data visibility and consistency between concurrent transactions, impacting risks like dirty, non-repeatable, or phantom reads.
+For custom rollback strategies, use @Transactional(rollbackFor = CustomException.class) to specify which exceptions trigger rollbacks,
+or manually control transactions in code to decide when to commit or rollback based on business logic Isolation levels set via
+annotations—such as @Transactional(isolation = Isolation.SERIALIZABLE)—control how much concurrency and consistency a transaction has by determining which data changes are visible during execution.
+To implement a custom rollback strategy, you can use the rollbackFor and noRollbackFor attributes in the @Transactional annotation (e.g., @Transactional(rollbackFor = CustomException.class)),
+or manage the transaction programmatically to explicitly trigger rollback based on complex conditions or business logic.
+
+To implement a custom rollback strategy, use the @Transactional(rollbackFor = CustomException.class) annotation to specify exactly which exceptions cause a rollback.
+This ensures that only certain errors revert the transaction, improving control but requiring careful handling to avoid unintentionally committing inconsistent or partial data,
+which could impact overall transaction consistency if not managed properly.
+

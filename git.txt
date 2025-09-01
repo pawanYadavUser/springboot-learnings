@@ -1,0 +1,81 @@
+🔧 Steps to Push Your Existing Spring Boot Project to GitHub
+1. Create a new repo on GitHub
+Go to GitHub.
+Click New Repository.
+Give it a name (e.g., springboot-demo).
+Leave it empty (don’t add README, .gitignore, or license — you can do it later).
+Copy the repo URL (HTTPS or SSH, e.g. https://github.com/yourname/springboot-demo.git).
+
+2. Initialize Git inside your IntelliJ project folder
+Open a terminal inside your project’s root directory and run:
+git init
+git add .
+git commit -m "Initial commit - Spring Boot project"
+
+3. Link to your GitHub repo
+git remote add origin https://github.com/yourname/springboot-demo.git
+
+4. Push your code
+git branch -M main   # rename current branch to main (optional, GitHub default is main)
+git push -u origin main
+
+5. Verify
+Refresh your GitHub repo page — your full Spring Boot project should now be there 🎉.
+
+ERROR
+while pushing code , it asked me to pull first "then it give error like
+$ git pull remote: Enumerating objects: 3, done. remote: Counting objects: 100% (3/3),
+done. remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0) Unpacking objects: 100% (3/3), 879 bytes | 0 bytes/s, done.
+From https://github.com/pawanYadavUser/springboot-learnings * [new branch] main -> origin/main
+There is no tracking information for the current branch. Please specify which branch you want to merge with. See git-pull(1) for details.
+git pull <remote> <branch> If you wish to set tracking information for this branch you can do so with: git branch --set-upstream-to=origin/<branch> main
+
+Ahh yes 👍 this is a classic first–push issue when your local branch and the remote branch aren’t linked yet.
+Here’s what’s happening:
+You created a repo on GitHub → GitHub made a default branch (main).
+Locally, you also have a branch (probably master or main) but it’s not tracking the remote branch.
+That’s why Git is telling you to set tracking info.
+
+✅ How to Fix (Clean Way)
+1. If your local branch name is main
+Run:
+git branch --set-upstream-to=origin/main main
+git pull --rebase origin main
+Then push:
+git push -u origin main
+
+----------------------------------------------------------------------
+
+git push -u origin main
+
+🔎 Parts of the command
+git push
+Pushes commits from your local branch to a remote branch.
+In other words: take my local code and update the remote repo.
+
+origin
+This is the name of the remote repository.
+When you run
+git remote add origin https://github.com/yourname/repo.git
+you tell Git “call this GitHub repo origin”.
+So here, you’re pushing to your GitHub repo named origin.
+
+main
+This is the branch name you’re pushing.
+Means “push my local main branch to the main branch on remote origin”.
+
+-u (or --set-upstream)
+This sets up a tracking relationship between your local branch and the remote branch.
+After running this once, you can just type:
+git push
+git pull
+without needing to specify origin main every time.
+Git will remember: my local main branch tracks origin/main.
+
+✅ In simple terms
+git push -u origin main
+
+means:
+➡️ “Push my local main branch to the main branch on the remote repo origin,
+and remember this link so I don’t have to type the branch name every time.”
+
