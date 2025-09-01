@@ -85,7 +85,8 @@ entities encapsulate fields, and polymorphism helps in handling different reques
  "Java is not 100% object-oriented because it supports primitive data types and static methods, which are not objects.
  However, through wrapper classes and autoboxing, primitives can behave like objects when needed."
 
--------------------
+------------------------------------------------------------------------------------------------------------------------------------
+
 3. What are the basic classes in Java?
 📌 Basic Classes in Java (java.lang package mainly)
 
@@ -130,7 +131,8 @@ Date & Time API
 Legacy: Date, Calendar.
 Modern (Java 8+): LocalDate, LocalTime, LocalDateTime, ZonedDateTime, etc.
 
-------------------
+-----------------------------------------------------------------------------------------
+
 3. What all methods are there in Object class?
 ✅ Methods in Object class:
 
@@ -1066,5 +1068,46 @@ or manage the transaction programmatically to explicitly trigger rollback based 
 
 To implement a custom rollback strategy, use the @Transactional(rollbackFor = CustomException.class) annotation to specify exactly which exceptions cause a rollback.
 This ensures that only certain errors revert the transaction, improving control but requiring careful handling to avoid unintentionally committing inconsistent or partial data,
-which could impact overall transaction consistency if not managed properly.
+which could impact overall transaction consistency if not managed properly.
+
+
+8. MYSQL queries questions:-
+Common causes of slow MySQL queries include missing indexes, inefficient query logic,
+large result sets, poor schema design, and hardware or resource bottlenecks.
+Diagnosis involves enabling the slow query log, using the EXPLAIN command to check execution plans, reviewing indexing, analyzing server resources,
+and optimizing queries by narrowing returned data and improving joins.
+Optimization can include adding or tuning indexes, rewriting queries, normalizing tables, and adjusting server configuration parameters for your workload.
+
+To identify columns for indexing, analyze queries with EXPLAIN to see which columns are often used in WHERE clauses, JOINs, or as sorting/grouping keys.
+Indexing speeds up reads but can slow down writes (INSERT, UPDATE, DELETE) and increases storage usage,
+so only index columns that significantly improve frequent query performance.
+Too many indexes or indexing rarely-searched columns can degrade overall database efficiency.
+
+Indexing is most beneficial for columns frequently used in search conditions, joins, or sorting, especially if those columns have high cardinality (many unique values).
+High cardinality improves selective power and query speed, while indexing low-cardinality columns (few distinct values) yields less benefit and may be wasteful.
+Always consider query patterns: index columns used in filters and join conditions most often to maximize performance.
+
+9. MYSQL Views
+Views in MySQL are virtual tables created by saved SQL queries; they do not store data but present live results each time queried.
+Internally, MySQL executes the view’s query whenever the view is accessed,
+abstracting complex joins or filters and helping with security by exposing only specific columns or rows.
+
+Pros:
+Simplifies complex queries and improves readability.
+Centralizes and abstracts business logic for easier maintenance.
+Can restrict user access to sensitive information, strengthening security.
+
+Cons:
+May cause performance issues, especially for complex or nested views since queries run in real time.
+Cannot have indexes or triggers directly, relying on underlying table optimization.
+Dependencies on underlying tables mean that changes or drops can break views without warning.
+
+When a view is queried, MySQL substitutes the view’s SQL definition into the query and executes it as if it were a subquery,
+so data is always fetched fresh from the base tables. This can impact performance, especially with complex or nested views, since no indexes exist on the view itself,
+but it improves security by restricting access to only the columns or rows defined in the view for specific users.
+
+MySQL rewrites queries involving views by expanding the view’s SQL definition into the query and executing it against the underlying tables,
+which means no data is stored in the view itself. This allows for strong security boundaries by exposing only necessary data,
+but can lead to performance trade-offs—especially with deep nesting or large joins—since views can’t be indexed directly and complex queries may run slower.
+Careful design is required to balance abstraction and efficiency when using views for both query simplicity and security.
 
