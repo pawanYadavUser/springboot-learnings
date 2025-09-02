@@ -112,6 +112,7 @@ System
 Provides system-related utilities (System.out.println, System.gc(), etc.).
 
 Class
+
 Represents metadata of classes (used in Reflection API).
 
 Throwable → Exception & Error
@@ -1110,4 +1111,127 @@ MySQL rewrites queries involving views by expanding the view’s SQL definition 
 which means no data is stored in the view itself. This allows for strong security boundaries by exposing only necessary data,
 but can lead to performance trade-offs—especially with deep nesting or large joins—since views can’t be indexed directly and complex queries may run slower.
 Careful design is required to balance abstraction and efficiency when using views for both query simplicity and security.
+
+--------------------------------------------------
+
+1/09/2025
+
+1. String vs Stringbuilder vs StringBuffer
+Strings:-
+Immutable: Once created, cannot be changed.
+Every modification (like concatenation, substring, replace) creates a new object in the string pool or heap.
+Stored in String Constant Pool (SCP) if created using literals.
+Thread safety: Immutable nature makes it naturally thread-safe.
+Performance: Slower in scenarios with many modifications, since new objects are created.
+
+String s1 = "Hello";
+s1.concat(" World"); // doesn't change s1
+System.out.println(s1); // Output: Hello
+
+2. StringBuilder
+Mutable: Can be modified without creating new objects.
+Not synchronized → not thread-safe, but faster than StringBuffer in single-threaded programs.
+Ideal when you do a lot of string concatenation or modification.
+
+StringBuilder sb = new StringBuilder("Hello");
+sb.append(" World");
+System.out.println(sb); // Output: Hello World
+
+3. StringBuffer
+Mutable: Like StringBuilder.
+Synchronized → thread-safe, but slower than StringBuilder because of synchronization overhead.
+Use when multiple threads modify the same string.
+
+StringBuffer sbf = new StringBuffer("Hello");
+sbf.append(" World");
+System.out.println(sbf); // Output: Hello World
+
+🔑 Quick Comparison Table
+
+| Feature       | String                       | StringBuilder                       | StringBuffer                 |
+| ------------- | ---------------------------- | ----------------------------------- | ---------------------------- |
+| Mutability    | Immutable                    | Mutable                             | Mutable                      |
+| Thread Safety | Yes (immutable)              | No                                  | Yes (synchronized)           |
+| Performance   | Slow (many objects)          | Fast (no sync)                      | Slower (sync)                |
+| Use Case      | Few modifications, constants | Single-threaded heavy modifications | Multi-threaded modifications |
+
+👉 Rule of Thumb:
+Use String → if value won’t change often.
+Use StringBuilder → if you need performance and single-threaded modification.
+Use StringBuffer → if you need thread safety.
+
+🔎 Internal Working
+1. String (Immutable)
+Internally, String uses a char[] array (till Java 8), or byte[] with encoding (from Java 9+).
+Example (Java 8):
+public final class String implements java.io.Serializable {
+    private final char value[];
+}
+Since value[] is final, once created it cannot be changed.
+Any modification like concat() returns a new object.
+✅ Example:
+String s = "Java";
+s.concat(" Rocks");  // creates a new "Java Rocks" object
+// "Java" still exists in memory, unless GC collects it
+
+2. StringBuilder (Mutable, Non-Synchronized)
+Internally also uses a char[] array that can expand.
+Example:
+public final class StringBuilder extends AbstractStringBuilder {
+    public StringBuilder(String str) {
+        super(str.length() + 16);
+        append(str);
+    }
+}
+
+AbstractStringBuilder maintains:
+char[] value;
+int count;
+
+When you call append():
+It writes directly into the existing char[].
+If capacity is exceeded, it doubles the array size (similar to ArrayList).
+No new object is created for every modification → much faster
+
+StringBuilder sb = new StringBuilder("Hi");
+sb.append(" Java");
+👉 Here value[] is modified in place, no new object created.
+
+3. StringBuffer (Mutable, Synchronized)
+Works exactly like StringBuilder, but all methods are synchronized.
+Example append() in StringBuffer:
+public synchronized StringBuffer append(String str) {
+    super.append(str);
+    return this;
+}
+Synchronization makes it thread-safe, but adds performance cost.
+✅ Example:
+StringBuffer sbf = new StringBuffer("Hi");
+sbf.append(" Java");
+👉 Same as StringBuilder, but thread-safe.
+
+Where do they create the string?
+
+String (literals) → Stored in String Constant Pool (SCP) (inside the heap).
+String (with new) → Stored in the heap, outside the SCP.
+StringBuilder / StringBuffer →
+They never use the SCP.
+They always create objects in the heap memory.
+Internally, they hold a char[] value in the heap that expands as needed.
+
+String Constant Pool (inside Heap)
+ ┌───────────┐
+ |  "Java"   |   ← stored here as a literal
+ └───────────┘
+
+
+Heap
+ ┌──────────────────────────────┐
+ | StringBuilder object          |
+ |  - char[] value = [J,a,v,a, ,R,o,c,k,s, ...]
+ |  - count = 10
+ |  - capacity = 20 (16 + "Java".length())
+ └──────────────────────────────┘
+                  ↑
+                  sb (reference variable)
 
