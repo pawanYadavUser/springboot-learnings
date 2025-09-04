@@ -1235,3 +1235,65 @@ Heap
                   ↑
                   sb (reference variable)
 
+---------------------------------------------------
+03/09/2025
+Comparable vs Comparator difference with example?
+1. Comparable
+Package: java.lang.Comparable
+Used to define the natural ordering of objects.
+A class implements Comparable<T> and overrides compareTo().
+Sorting is based on one property only (unless you code logic for multiple).
+
+🔹 2. Comparator
+Package: java.util.Comparator
+Used to define custom orderings outside the class.
+You can create multiple comparators for different properties.
+Useful when you don’t own the class code (can’t implement Comparable).
+
+Example in ComparableVsComparator folder
+
+| Aspect           | Comparable               | Comparator                            |
+| ---------------- | ------------------------ | ------------------------------------- |
+| Package          | `java.lang`              | `java.util`                           |
+| Method           | `compareTo(T o)`         | `compare(T o1, T o2)`                 |
+| Sorting logic    | Inside the class itself  | Outside the class                     |
+| # of sort orders | Only one (natural order) | Multiple (define as many as you want) |
+| Use case         | Default/natural sorting  | Custom sorting                        |
+
+4. Java 8+ Example (Lambda Comparator)
+list.sort((s1, s2) -> s1.name.compareTo(s2.name));
+
+🧠 Interview-Crisp Answer
+👉 “Comparable is used for natural ordering (by implementing compareTo() in the class itself),
+while Comparator is used for custom ordering (via separate classes or lambdas).
+A class can only implement one Comparable, but can have multiple Comparators.”
+--------------------------------------------------------------------------------------
+
+- Class A has method display() and class B extends A and has method display(String msg) – which OOP principle is used?
+✅ Analysis
+Class B extends A → This is Inheritance.
+In B, there is no overriding because the method signatures are different (display() vs display(String)).
+Instead, in B, the display(String msg) method is Overloading the display() method (same name, different parameter list).
+
+🎯 OOP Principles Used:
+Inheritance – because B is inheriting from A.
+Polymorphism (Compile-time / Method Overloading) – because display() and display(String msg) coexist.
+
+MethodOverloading example:-
+👉 Here display() and display(String) are different methods.
+This is compile-time polymorphism (overloading).
+
+MethodOverriding example:-
+👉 Here the method signature is same, so it’s method overriding.
+This gives runtime polymorphism (decided at runtime which method to call).
+
+✅ Summary
+Overloading → same method name, different parameters (compile-time polymorphism).
+Overriding → same method name + same parameters in child class (runtime polymorphism).
+
+-----------------------------------------------------------------------------------------------------
+
+
+
+
+

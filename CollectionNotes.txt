@@ -1,0 +1,399 @@
+1. - Difference between collections and stream?
+| Feature          | **Collections**                                                                 | **Streams**                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Definition**   | Data structure that stores **elements in memory** (e.g., `List`, `Set`, `Map`). | A **pipeline of data** (sequence of elements) supporting functional-style operations.                        |
+| **Nature**       | **Eager** – you store and access elements directly.                             | **Lazy** – operations are executed only when a terminal operation (like `collect()`, `forEach()`) is called. |
+| **Storage**      | Actually **stores data** (in memory).                                           | Does **not store data**; it computes results from a source (collection, array, I/O channel).                 |
+| **Traversal**    | Can be traversed **multiple times**.                                            | A stream can be traversed **only once** (after a terminal operation, it’s consumed).                         |
+| **Modification** | You can **add/remove/update** elements.                                         | Streams are **read-only** (cannot modify the underlying data).                                               |
+| **Iteration**    | External iteration (e.g., `for-each` loop).                                     | Internal iteration (handled by stream API).                                                                  |
+| **Parallelism**  | Manual (`for` loops, `ExecutorService`).                                        | Built-in (`parallelStream()`).                                                                               |
+| **Operations**   | Focused on **data storage & structure manipulation**.                           | Focused on **data processing (map, filter, reduce, collect)**.                                               |
+
+✅ Interview-Ready Answer
+Collections are about storing and managing data in memory, while Streams are about processing data in a functional, declarative way.
+Collections use external iteration and allow modifications, while Streams use internal iteration, are lazy, can be parallelized easily, and are consumed only once.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. - Internal Working of HashMap, HashSet, TreeMap and TreeSet and ConcurrentHashMap?
+
+🔹 1. HashMap (Key–Value Pair Storage)
+Data Structure: Uses array of buckets internally (each bucket is a linked list / tree in Java 8+).
+How it works:
+When you put a key-value pair (put(key, value)), the hashCode() of the key is computed.
+The hash is converted to an index (bucket position).
+If the bucket is empty → insert directly.
+If not empty → compare using equals() to avoid duplicates.
+
+Before Java 8: bucket is a LinkedList.
+Java 8+: If collisions become large (>8 elements), LinkedList is converted to a balanced tree (Red-Black Tree).
+On get(key) → same hash process to find the bucket → scan list/tree for match using equals().
+Key Points:
+Allows 1 null key, multiple null values.
+Order is not guaranteed.
+Time complexity: O(1) avg, O(log n) in case of tree bucket.
+
+🔹 2. HashSet
+Built on top of HashMap.
+Working:
+When you do set.add(x), internally it calls map.put(x, PRESENT), where PRESENT is a dummy constant object.
+Duplicate check is handled by HashMap’s containsKey().
+Key Points:
+Stores only unique elements.
+Allows 1 null element.
+Order is not guaranteed.
+
+🔹 3. TreeMap (Sorted Key–Value Map)
+Data Structure: Red-Black Tree (Self-balancing BST).
+How it works:
+Keys are sorted according to their natural order (via Comparable) or using a Comparator.
+Insertions and lookups walk down the tree and maintain balance (via color-flipping & rotations).
+Key Points:
+Does not allow null key (throws NullPointerException), but values can be null.
+Order is sorted (ascending by default).
+Time complexity: O(log n) for put/get.
+
+🔹 4. TreeSet
+Built on top of TreeMap.
+Working:
+When you do set.add(x), internally it calls map.put(x, PRESENT).
+Sorting order maintained via TreeMap’s Red-Black Tree.
+Key Points:
+Stores unique elements in sorted order.
+Does not allow null element (from Java 7 onwards if using natural ordering).
+Time complexity: O(log n) for add, remove, contains.
+
+🔹 5. ConcurrentHashMap
+Thread-safe version of HashMap.
+How it works (Java 8):
+Data is stored in an array of Nodes (similar to HashMap).
+Instead of locking the entire map, it uses fine-grained locking:
+Before Java 8: Segmented locking (each segment = smaller HashMap with a lock).
+Java 8+: Uses CAS (Compare-And-Swap) + synchronized blocks on buckets only when needed.
+Read operations (get) are non-blocking (almost O(1)).
+Write operations (put, remove) lock only the affected bucket.
+Key Points:
+No null key or null value allowed.
+Faster than Hashtable and Collections.synchronizedMap().
+Suitable for concurrent environments.
+
+🖼️ Quick Analogy
+
+HashMap → A big cupboard with labeled boxes (fast lookup, unordered).
+HashSet → Just the labels of the cupboard, no values inside.
+TreeMap → Cupboard where keys are always arranged in sorted order.
+TreeSet → Just the sorted labels of the cupboard.
+ConcurrentHashMap → A cupboard with multiple workers,each worker locks only a single box instead of locking the whole cupboard.
+
+⚡ Interview Tip:
+If asked "Why does ConcurrentHashMap not allow null key/value?" →
+👉 Because in multi-threaded environments, a null return from get(key) would create ambiguity:
+Did the mapping not exist?
+Or was the value actually null?
+
+why treemap doesnt allow null keys?
+✅ Why TreeMap doesn’t allow null keys
+TreeMap uses Red-Black Tree internally
+Keys are stored in sorted order.
+Sorting is done either by:
+Natural ordering (Comparable), or
+A Comparator you provide.
+
+Comparison Problem
+When inserting a new key, TreeMap must compare it with existing keys (compareTo() or compare()).
+If the key is null → calling null.compareTo(something) causes NullPointerException.
+Example:
+TreeMap<String, Integer> map = new TreeMap<>();
+map.put(null, 1);  // NPE at runtime
+Design Choice (Clarity)
+HashMap can allow one null key because it doesn’t sort — it just hashes it.
+TreeMap must always maintain order, so null key would break the comparison logic.
+To keep things consistent and predictable, Java designers decided: no null keys in TreeMap.
+✅ Why null values are allowed in TreeMap
+TreeMap compares keys, not values.
+So values can be null safely.
+🎯 Interview-ready Answer
+TreeMap does not allow null keys because it sorts keys using compareTo() or a Comparator, and comparing null with other keys would throw NullPointerException.
+On the other hand, HashMap allows one null key since hashing does not require comparisons.
+
+| Collection Type        | Null Key Allowed?                    | Null Value Allowed?          | Notes                                                                      |
+| ---------------------- | ------------------------------------ | ---------------------------- | -------------------------------------------------------------------------- |
+| **HashMap**            | ✅ Yes (only **1** null key)          | ✅ Yes (multiple null values) | Stores key-value pairs in buckets (hashing).                               |
+| **HashSet**            | ✅ Yes (only **1** null element)      | N/A                          | Built on top of `HashMap`, so 1 null element allowed.                      |
+| **TreeMap**            | ❌ No (throws `NullPointerException`) | ✅ Yes                        | Keys must be comparable → `null` breaks comparison.                        |
+| **TreeSet**            | ❌ No (throws `NullPointerException`) | N/A                          | Built on top of `TreeMap`, so no null elements.                            |
+| **ConcurrentHashMap**  | ❌ No                                 | ❌ No                         | Disallows null key & values to avoid ambiguity in concurrent environments. |
+| **Hashtable** (legacy) | ❌ No                                 | ❌ No                         | Thread-safe, but stricter rules than `HashMap`.                            |
+
+--------------------------------------------------------------------------------------------
+
+what does it mean by concurrent environment?
+A concurrent environment is when multiple threads are executing at the same time and may
+try to access or modify shared resources (like variables, objects, or collections).
+
+In single-threaded code → only one thread runs at a time, so no conflicts.
+
+In multi-threaded / concurrent code → two or more threads may read/write the same data simultaneously,
+which can lead to race conditions, data corruption, or inconsistent state.
+One thread might be writing to the bucket, another thread reading from the same bucket.
+This can lead to inconsistent state, lost updates, or infinite loops (in HashMap before Java 8).
+
+✅ Why ConcurrentHashMap is needed
+A normal HashMap is not thread-safe → fails in concurrent environments.
+ConcurrentHashMap is designed for concurrency:
+Multiple threads can safely read without blocking.
+Write operations lock only the specific bucket (not the whole map).
+Prevents corruption in concurrent scenarios.
+
+-------------------------------------------------------------------------------------
+
+How ConcurrentHashMap avoids locking the entire map (i.e., bucket-level locking with CAS) in a visual way for interviews?
+🔹 How ConcurrentHashMap avoids locking the entire map
+✅ Old way (Hashtable / SynchronizedMap)
+Every read/write was wrapped with a synchronized block.
+So if 1 thread was updating a value, all other threads were blocked — even for simple reads.
+This caused huge performance bottlenecks in concurrent environments.
+
+✅ New way (ConcurrentHashMap in Java 8+)
+Does not lock the whole map.
+Uses fine-grained locking + CAS (Compare-And-Swap)
+🔸 Internal Structure
+Data stored as Node[] table (like HashMap).
+Each bucket (index in the table) can have:
+A Node (key, value, next)
+Or a TreeNode (red-black tree) when collisions are high
+
+🔸 Operations
+Reads (get)
+Completely lock-free.
+Just compute hash, go to bucket, and traverse linked list/tree.
+Uses volatile fields so threads see the latest values.
+✅ Multiple threads can read simultaneously → very fast.
+Writes (put, remove)
+Only lock the specific bucket (bin) being updated.
+Done using synchronized on Node level (not entire map).
+Steps:
+Compute hash → find bucket index.
+If bucket empty → try to insert using CAS (no locking needed).
+If bucket occupied → synchronize only that bucket → insert/update.
+✅ Other buckets remain free for other threads.
+Resizing (rehashing)
+Even resizing is parallelized.
+Multiple threads help redistribute buckets into the new table.
+
+🖼️ Visual Analogy
+Imagine a cupboard with many drawers (buckets):
+Hashtable → Only 1 key 🗝️ for the entire cupboard → if one person is using it, others must wait.
+ConcurrentHashMap → Every drawer has its own small lock 🔒 → multiple people can use different drawers at the same time.
+
+🎯 Interview-ready Summary
+ConcurrentHashMap achieves thread safety without locking the entire map by using bucket-level locking and CAS operations.
+Reads are completely lock-free.
+Writes only lock the specific bucket being updated.
+This allows multiple threads to work in parallel, making it much faster than Hashtable or Collections.synchronizedMap() in concurrent environments.
+
+⚡ Bonus: If asked “Why CAS?” →
+👉 CAS (Compare-And-Swap) is a non-blocking atomic operation that updates a value only if it has not changed by another thread.
+This avoids heavy locking and improves concurrency.
+🎯 How this connects to ConcurrentHashMap CHM
+Instead of locking entire structure, CHM uses CAS for some operations (like inserting in an empty bucket).
+If CAS succeeds → update happens without locking.
+If CAS fails → falls back to bucket-level synchronization.
+So CAS is the first line of defense, and fine-grained locking is the backup.
+🔹 What CAS actually does
+Imagine you have a box that stores a number.
+You think the number is X.
+You want to change it to Y.
+But before you do, you check: “Is the box still X?”
+If yes → update it to Y. ✅
+If no → do nothing. ❌
+That is Compare-And-Swap
+It is an atomic CPU instruction that ensures only one thread’s update succeeds when multiple threads try at the same time.
+
+AtomicInteger count = new AtomicInteger(0);
+// Thread 1
+count.compareAndSet(0, 1); // "If value is 0, set to 1"
+Here’s what happens internally:
+Thread 1 sees value = 0.
+It compares 0 with expected 0. ✅ Match!
+Swaps value → 1.
+
+// Thread 2
+count.compareAndSet(0, 2); // "If value is 0, set to 2"
+Thread 2 thinks value is still 0.
+But after Thread 1, the value is actually 1. ❌
+Compare fails → Thread 2’s update is rejected.
+So only one thread wins, without using a lock.
+
+🔹 Why is this useful?
+In a concurrent environment.
+Many threads may want to update the same variable.
+Instead of blocking each other with synchronized, CAS lets threads try updates in parallel.
+Only the thread that finds the “expected value” succeeds.
+
+🔸 Visual Analogy
+Think of CAS like putting your name on a form:
+You say: “If the form is still blank, I’ll write my name.”
+If someone else already wrote their name, your attempt fails.
+No fighting, no waiting — just check and update in one step.
+
+👉 So in short: CAS = check current value → if it matches what I expect, update it atomically. Else, fail.
+
+Example:- RaceConditionCASFix.java
+
+---------------------------------------------------------------------------------------------------------
+
+🔹 What is ConcurrentModificationException?
+It’s a runtime exception that occurs when a collection (like ArrayList, HashMap, etc.) is structurally modified while being iterated,
+using an iterator or enhanced-for loop.
+Structural modification → adding/removing elements that change the size of the collection.
+Safe modification → only through the iterator’s own remove() method.
+
+🔹 Why does this happen?
+Most collection classes (like ArrayList, HashMap) are fail-fast.
+When you create an iterator, it keeps an internal modCount (modification count).
+Every structural modification updates modCount
+If during iteration, iterator detects modCount has changed unexpectedly → it throws ConcurrentModificationException.
+
+🔹 How to avoid CME?
+✅ Use iterator’s remove() method
+✅ Use CopyOnWriteArrayList (thread-safe, avoids CME)
+🔹 In Multi-threading Context
+CME also occurs if:
+One thread is iterating a collection,
+Another thread modifies it at the same time.
+That’s why we use ConcurrentHashMap, CopyOnWriteArrayList, etc. in concurrent environments.
+
+✅ Interview One-Liner:
+ConcurrentModificationException happens because most collections are fail-fast —
+if the collection is structurally modified outside the iterator, iteration is no longer safe, so Java throws this exception to prevent unpredictable behavior.
+
+🔹 Why does list.remove(s) sometimes work without exception?
+The enhanced-for loop is syntax sugar for using an Iterator.
+for (String s : list) { ... }
+becomes
+Iterator<String> it = list.iterator();
+while (it.hasNext()) {
+    String s = it.next();
+    ...
+}
+When you call list.remove(s) directly, it modifies the list but not the iterator’s internal state.
+The next call to it.next() checks the modCount mismatch → only then CME is thrown.
+
+🔹 Cases
+Case 1: Single removal, then loop ends
+If you remove the last element being iterated (or remove once and iteration finishes before it.next() is called again), you might not see CME.
+Case 2: More iterations after removal.
+If iteration continues, the next it.next() will detect modCount mismatch → CME.
+
+✅ One-liner for interview:
+list.remove(s) inside a loop may or may not throw ConcurrentModificationException immediately —
+the exception is thrown only when the iterator detects a modCount mismatch on the next iteration step.
+
+-----------------------------------------------------------------------------------------
+
+- Which Data structure to use for frequent data update, remove data and add new data & searching?
+🔹 Requirements
+Frequent updates
+Frequent additions
+Frequent removals
+Efficient searching
+So we want fast insert, delete, and search.
+
+🔹 Data Structure Options
+1. Array / ArrayList
+✅ Fast random access (O(1) by index).
+❌ Insertion/deletion in the middle is costly (O(n)) because of shifting.
+❌ Not ideal for frequent add/remove.
+
+2. LinkedList
+✅ Fast insertion/deletion (O(1) if node reference known).
+❌ Searching is slow (O(n)).
+❌ Not good if search is frequent.
+
+3. HashMap / HashSet
+✅ Average O(1) for insert, delete, update, search by key.
+✅ Best when search is based on a key (hashable).
+❌ No ordering of elements.
+❌ Worst-case O(n) if hash collisions happen (though rare with good hash).
+👉 Best choice when you need frequent add/remove/search with keys.
+
+4. TreeMap / TreeSet (Balanced BST like Red-Black Tree)
+✅ O(log n) for insert, delete, search.
+✅ Maintains sorted order.
+❌ Slower than HashMap for pure key lookups.
+👉 Best choice when you need sorted data + frequent updates.
+
+5. ConcurrentHashMap
+✅ Like HashMap but thread-safe.
+✅ Ideal in concurrent environments.
+
+6. Hybrid Approach
+Sometimes we combine:
+HashMap + LinkedList → LRU Cache (fast lookup + ordered eviction).
+HashMap + Tree → fast lookups + ordered iteration.
+
+🔹 Final Answer (for interviews)
+If you need fastest add/remove/update/search → HashMap / HashSet (average O(1)).
+If you also need sorted order → TreeMap / TreeSet (O(log n)).
+If operations happen in multi-threaded environment → ConcurrentHashMap.
+
+✅ One-liner to say in interview:
+“For frequent insert, delete, update, and search,
+a HashMap (or ConcurrentHashMap in multi-threaded context) is best because it provides average O(1) performance for these operations.
+If ordering is required, then a TreeMap is more suitable, with O(log n) operations.”
+
+🔹 Comparison of Common Data Structures in Java
+
+| Data Structure        | Search (by value)        | Insert                            | Delete                            | Update          | Ordered?            | Notes                                                      |
+| --------------------- | ------------------------ | --------------------------------- | --------------------------------- | --------------- | ------------------- | ---------------------------------------------------------- |
+| **Array / ArrayList** | `O(n)` (linear search)   | `O(1)` at end, `O(n)` in middle   | `O(n)` (shift needed)             | `O(1)` by index | ✅ (insertion order) | Great for random access, bad for frequent updates/removals |
+| **LinkedList**        | `O(n)`                   | `O(1)` if node known, else `O(n)` | `O(1)` if node known, else `O(n)` | `O(n)`          | ✅ (insertion order) | Good for sequential access, poor for search                |
+| **HashMap / HashSet** | `O(1)` avg, `O(n)` worst | `O(1)` avg                        | `O(1)` avg                        | `O(1)` avg      | ❌ (unordered)       | Best for frequent add/remove/search by key                 |
+| **TreeMap / TreeSet** | `O(log n)`               | `O(log n)`                        | `O(log n)`                        | `O(log n)`      | ✅ (sorted order)    | Good balance when you need sorted + efficient ops          |
+| **ConcurrentHashMap** | `O(1)` avg               | `O(1)` avg                        | `O(1)` avg                        | `O(1)` avg      | ❌                   | Thread-safe, used in concurrent environments               |
+
+🔹 Interview-ready Answer
+👉 If interviewer asks “Which DS for frequent add/remove/update/search?”
+Say:
+HashMap — Best choice, O(1) avg for all operations.
+ConcurrentHashMap — If multi-threaded.
+TreeMap — If sorted order is required.
+
+🔹 Real-world Use Cases
+1. HashMap → Fast Lookup (O(1))
+👉 Example: LRU Cache (Least Recently Used Cache)
+Used in browsers, databases, OS page replacement.
+We want:
+Fast lookup (O(1)) → HashMap.
+Maintain usage order → Doubly LinkedList.
+Implementation:
+HashMap stores <key, node> references.
+Doubly LinkedList keeps track of order (move recently used to front, evict least used from back).
+📌 This is exactly how LinkedHashMap in Java can be used to implement LRU Cache.
+
+2. TreeMap → Sorted Data
+👉 Example: Leaderboard / Ranking System (e.g., gaming platform, coding contest scoreboard)
+You need:
+Fast insert/update scores.
+Keep scores sorted.
+TreeMap stores <score, player> entries in sorted order.
+Allows O(log n) search for top N scores.
+
+3. ConcurrentHashMap → Thread-safe Lookups
+👉 Example: Real-time Session Store (e.g., web server sessions, API rate-limiting)
+Multiple threads update sessions.
+HashMap is not thread-safe (may corrupt data).
+ConcurrentHashMap allows concurrent reads/writes with bucket-level locks + CAS
+
+4. ArrayList → Random Access
+👉 Example: Playlist in a Music App
+Accessing by index → O(1)
+Insertion/removal rare compared to lookups.
+ArrayList is ideal here.
+
+5. LinkedList → Frequent Insert/Delete
+👉 Example: Undo/Redo Stack (like in editors, IDEs)
+Adding/removing from head/tail → O(1).
+LinkedList works better than ArrayList if size changes frequently.

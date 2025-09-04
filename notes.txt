@@ -967,3 +967,22 @@ Annotation in Spring	@PathVariable	@RequestParam	@RequestBody
 Example URL	/users/123	/users?role=admin	Body: JSON/XML
 
 “When to use what?” → Use Path Variable for identifying a resource, Query Param for filters/options, Request Body for sending full objects.
+
+19. what is @Primary annotation!
+@Primary is used when multiple beans of the same type are available in the Spring context, and you want to mark one of them as the default choice for autowiring.
+Without it, Spring would throw an ambiguity error (NoUniqueBeanDefinitionException).
+
+Example in primaryAnnotation folder !
+What happens?
+Both CreditCardPayment and PaypalPayment implement PaymentService.
+If no hint is given, Spring would be confused.
+But since PaypalPayment is marked with @Primary, it becomes the default bean injected.
+
+How is it different from @Qualifier?
+@Primary → declares a default bean among candidates.
+@Qualifier → gives explicit control, you specify exactly which bean to inject.
+
+e.g.,
+@Autowired
+@Qualifier("creditCardPayment")
+private PaymentService paymentService;
