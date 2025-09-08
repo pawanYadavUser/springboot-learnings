@@ -1,0 +1,186 @@
+1. Define a singleton class in java?
+🔹 Ways to Define a Singleton Class in Java
+1. Eager Initialization (Simple & Thread-safe)
+public class Singleton {
+    // create instance at class loading time
+    private static final Singleton instance = new Singleton();
+
+    // private constructor prevents instantiation
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        return instance;
+    }
+}
+
+✅ Thread-safe
+❌ Instance created even if never used (not memory efficient).
+
+How it works:
+
+Class Loading
+When the JVM loads the Singleton class, it creates the static field instance once.
+So only one object of Singleton is created during class loading.
+Private Constructor
+The private Singleton() prevents anyone outside the class from calling new Singleton().
+So you cannot create another object manually.
+Global Access via getInstance()
+Every call to Singleton.getInstance() returns the same pre-created object reference.
+
+Purpose of final here:
+Ensures immutability of the reference
+final means the variable instance cannot be reassigned to another object after it’s initialized.
+
+Example (not possible here):instance = new Singleton();  // ❌ compilation error
+This guarantees that there will always be exactly one reference pointing to that unique object.
+
+Thread-safety with eager initialization
+Since it’s initialized when the class is loaded, and final ensures it never changes, there’s no risk of different threads seeing different objects.
+
+Strict Singleton contract
+A singleton’s core idea is only one instance.
+Without final, someone might accidentally (inside the class itself) reassign instance, breaking the pattern.
+
+Key Point:
+final protects the reference (you can’t point it to another object).
+It doesn’t make the object itself immutable (the internal state of the Singleton can still change if it has setters or mutable fields).
+
+✅ So in your example, final ensures the instance variable always points to the same single object, preserving the Singleton guarantee.
+
+4. Double-Checked Locking (Best Practice)
+public class Singleton {
+    private static volatile Singleton instance;
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        if (instance == null) {                // 1st check
+            synchronized (Singleton.class) {
+                if (instance == null) {        // 2nd check
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}
+
+🔑 Problem Without volatile
+When you write:
+instance = new Singleton4();
+
+This is not a single atomic action. The JVM can split it into 3 steps (called instruction reordering for performance reasons):
+Allocate memory for the object.
+Assign the reference to instance.
+Initialize the object (call constructor).
+👉 Due to reordering, steps 2 and 3 can switch places.
+
+So another thread could see instance as non-null (step 2 done), but the object might not be fully constructed yet (step 3 not done).
+If that happens, the thread would get a partially initialized object → very dangerous bug.
+
+🛠 Role of volatile
+Declaring:
+private static volatile Singleton4 instance;
+does two things:
+Prevents instruction reordering
+Ensures that when one thread writes to instance, the constructor fully finishes before any other thread sees the reference.
+Ensures visibility across threads
+If one thread sets instance, other threads will immediately see the updated value (no stale cache).
+
+🔄 How Double-Checked Locking Works Here
+First check (if (instance == null))
+Fast path, avoids synchronization overhead after the object is initialized.
+Synchronized block
+Only one thread enters here at a time.
+Second check (if (instance == null))
+Needed because multiple threads may pass the first check simultaneously, but only the first should create the instance.
+volatile ensures that:
+No half-baked object escapes.
+Correctly published instance is visible to all threads.
+
+✅ Without volatile, the pattern is broken and can lead to hard-to-reproduce bugs.
+✅ With volatile, it becomes thread-safe and efficient (sync only on the first call).
+
+When you write:
+instance = new Singleton4();
+It looks like a single action in Java, but under the hood the JVM + CPU actually breaks it into 3 low-level steps:
+The 3 steps
+- Allocate memory
+Reserve a block of memory big enough to hold a Singleton4 object.
+Let’s call that address 0xABC.
+- Assign the reference
+Store the memory address (0xABC) into the variable instance.
+Now instance is non-null (it points to that memory).
+⚠️ At this moment, the constructor has not run yet, so the object’s fields may contain garbage/default values.
+- Initialize the object
+Actually run the Singleton4() constructor to initialize fields and set up the object properly.
+
+The Danger
+Because of instruction reordering (done by compilers or CPUs to optimize performance), steps 2 and 3 can swap.
+So the sequence could become:
+Allocate memory (0xABC)
+Assign instance = 0xABC (instance is now non-null)
+Run constructor
+
+What another thread sees
+Imagine Thread A is in the middle of new Singleton4() and Thread B calls getInstance():
+Thread B checks if (instance == null).
+Sees instance is non-null (step 2 already done).
+Returns that reference.
+But the constructor (step 3) hasn’t run yet → Thread B gets a half-initialized object. 🚨
+
+How volatile fixes it
+volatile tells the JVM:
+Don’t reorder the assignment and constructor.
+Flush writes to main memory immediately.
+Reads always see the latest value from main memory.
+
+So with volatile, the order is guaranteed:
+Allocate → Initialize → Assign reference
+
+🔹 Interview One-Liner
+“Singleton is a design pattern ensuring only one instance of a class exists.
+The best modern way in Java is using Enum or Bill Pugh static inner class.
+For explicit control, we use double-checked locking with a volatile instance.”
+
+🔑 Why Enum Singleton works
+Normally with Singleton classes, you worry about:
+Thread safety (multiple threads creating multiple objects).
+Serialization (when deserialized, you might accidentally get new objects).
+Reflection (bypassing private constructor).
+But Enums in Java automatically handle these issues:
+- Thread-safe initialization
+The JVM guarantees that enum constants are created once per JVM, in a thread-safe way.
+- Serialization-safe
+Enum constants are handled specially by the JVM; deserialization never creates a new instance, it always returns the same constant.
+- Reflection-safe
+You cannot create enum instances via reflection (constructor is blocked).
+So enum gives you a singleton for free — no volatile, no synchronized, no extra boilerplate.
+
+🔒 Bonus Proof: Serialization-safe
+If you serialize and deserialize Singleton.INSTANCE, you still get the same instance, unlike normal singletons where deserialization can break the pattern.
+
+🔒 Why this works
+Normally, a Serializable class can create new objects when deserialized.
+With enums, the JVM ensures the constant (INSTANCE) is always returned.
+So even after writing to file and reading back, you don’t break the Singleton property.
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+2. What is profiling in springboot application?
+
+3. "This is Pawan"
+create output : [sihT] [is] [nawaP]
+using streams!
+
+------------------------------------------------------------------------------------------------------------
+
+4. How to make a creation of bean based on a given flag!
+
+5. Which design pattern u used in your project!
+
+6. MVC , monolithic, microservices!
+
+7. Which version of java you used!

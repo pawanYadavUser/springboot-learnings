@@ -1293,7 +1293,142 @@ Overriding → same method name + same parameters in child class (runtime polymo
 
 -----------------------------------------------------------------------------------------------------
 
+07/09/2025
 
+Streams question practice!
 
+| Case                                                                          | Prefer `reduce` | Prefer `collect`  |
+| ----------------------------------------------------------------------------- | --------------- | ----------------- |
+| Numbers (sum, product, min, max)                                              | ✅ Yes           | ❌ No              |
+| Immutable accumulation (like reversing via concatenation, though inefficient) | ✅ Works         | ❌ Overkill        |
+| Building complex results (StringBuilder, List, Map, custom objects)           | ❌ Avoid         | ✅ Yes             |
+| Parallel streams (with mutable objects)                                       | ❌ Risky         | ✅ Designed for it |
 
+👉 In short:
+Use reduce for mathematical-style reduction.
+Use collect when building or mutating a container (List, Set, Map, StringBuilder).
 
+2. What is .collect(...)?
+collect() is a mutable reduction operation in Streams.
+It takes 3 arguments here:
+.collect(
+    supplier,        // creates the container
+    accumulator,     // adds each element into container
+    combiner         // merges containers (needed in parallel)
+)
+e.g.,
+String reversed = Arrays.stream("This".split(""))
+        .collect(
+            StringBuilder::new,
+            (sb, ch) -> sb.insert(0, ch),
+            (sb1, sb2) -> sb1.insert(0, sb2) // combiner
+        ).toString();
+
+Supplier: StringBuilder::new
+This tells Java how to start the result.
+👉 Equivalent to:
+() -> new StringBuilder()
+
+Accumulator: (sb, ch) -> sb.insert(0, ch)
+For each element (ch) from the stream, add it into the result (sb).
+Normally we’d do sb.append(ch) (adds to the end).
+Here we do sb.insert(0, ch) (insert at the front).
+First "T" → "T"
+Then "h" → "hT"
+Then "i" → "ihT"
+Then "s" → "sihT"
+✅ Result = "sihT"
+
+Combiner: (sb1, sb2) -> sb1.insert(0, sb2)
+This is needed only when the stream runs in parallel.
+Why?
+Parallel streams split work across multiple threads.
+Each thread creates its own StringBuilder and fills it with partial results.
+At the end, Java needs to merge them.
+The combiner defines how to merge two partial results.
+Here
+sb1.insert(0, sb2) → put sb2 in front of sb1.
+In sequential streams → combiner is never called
+
+.toString()
+Finally, convert the StringBuilder into a plain String.
+
+⚡So in simple words:
+Supplier: start with empty StringBuilder
+Accumulator: insert each char at the beginning → reverses the word
+Combiner: needed only for parallel streams (merge results)
+
+✅ Summary of Output if parallel() streams were used: parallelCollectDemo:
+Each thread builds its own local result with words reversed (due to insert(0, ch)).
+Then partial results are merged, again prepending one result into another.
+The merge order depends on thread scheduling, so the final string’s order is non-deterministic across runs.
+
+---------------------------------------------------
+
+07/09/2025
+
+1. max method in streams!
+What does max() return?
+Optional<T>
+not just T.
+That’s because:
+If the stream has at least one element, max() can return it.
+If the stream is empty, then there’s no maximum value → instead of returning null (unsafe), it wraps the result in an Optional.
+
+Why orElse("")?
+Optional forces you to decide what to do if the stream is empty.
+.orElse("") means:
+If a longest word exists → return it.
+If no words exist (empty string input → split gives nothing) → safely return "" (empty string).
+
+Would you like me to also show you the difference between orElse, orElseGet, and orElseThrow (since that’s a very common interview extension around Optional)?
+
+2. In StreamExample.java
+for uniqueCharString questions!
+
+📝 Explanation
+Identity = new LinkedHashSet<>() → preserves order of first occurrence.
+Accumulator = (set, ch) -> { set.add(ch); return set; } → adds character.
+Combiner = (set1, set2) -> { set1.addAll(set2); return set1; } → merges partial results from different threads.
+Finally, String.join("", uniqueSet) builds the concatenated string.
+
+Why LinkedHashSet?
+LinkedHashSet is a Set, so it automatically avoids duplicates.
+LinkedHashSet also preserves insertion order.
+The order of first occurrence is preserved: "b" first, "a" second, "n" third.
+This is exactly what we want for "banana" → "ban".
+
+How this works in parallel streams
+Each thread gets its own identity (new LinkedHashSet<>())
+Accumulator adds characters it sees to its local set.
+Combiner merges sets from multiple threads using addAll().
+LinkedHashSet.addAll() preserves first-seen order across merged sets, so final output is still "ban".
+
+✅ Key point:
+Using a plain HashSet wouldn’t preserve order.
+Using LinkedHashSet ensures duplicates removed + order preserved → correct output in parallel streams.
+
+1️⃣ Parallel stream behavior
+In a parallel stream:
+Each thread processes a subset of the input.
+Each thread gets its own identity (new LinkedHashSet<>()).
+Accumulator runs per-thread, adding elements to its local set.
+Combiner merges these partial sets.
+
+Merging order
+You wrote:
+“thread1 has [b, a, n] and thread2 has [a, n], then addAll merges”
+Here’s what happens:
+The combiner order is not guaranteed — it depends on how threads finish and how the framework merges sets.
+Example possible merges:
+set1.addAll(set2) → [b, a, n] (thread2’s a,n mostly duplicates → ignore
+set2.addAll(set1) → [a, n, b] → order different
+✅ Key point: LinkedHashSet preserves order of insertion in each set, but in parallel streams, the final merge order is not deterministic unless you enforce ordering.
+
+What this means for “banana"
+If we just do parallelStream() with LinkedHashSet + addAll(), in practice you might get "ban", but it’s not guaranteed every run.
+If you want true deterministic first-seen order, you need to either:
+Use stream() (sequential) instead of parallelStream()
+Or use Collectors.toCollection(LinkedHashSet::new) which preserves encounter order safely in parallel streams.
+
+how Collectors.toCollection(LinkedHashSet::new) will help?

@@ -71,6 +71,7 @@ public class Employee {
 //        collect() performs mutable fold operations (repackaging elements to some data structures and applying some additional logic, concatenating them, etc.) on data elements held in the Stream instance.
 
 //        filter()
+
 //        produces a new stream that contains elements of the original stream that pass a given test (specified by a predicate).
 
         List<Employee> empWithSalaryGT20000 = employees.stream().filter(emp -> emp.salary > 20000).collect(Collectors.toList());
@@ -92,7 +93,7 @@ public class Employee {
 //        The syntax Employee[]::new creates an empty array of Employee—which is then filled with elements from the stream.
 
 //        flatmap
-//        A stream can hold complex data structures like Stream<List<String>>. In cases like this, flatMap() helps us to flatten the data structure to simplify further operations
+//        A stream can hold complex data structures like Stream<List<List<String>>>. In cases like this, flatMap() helps us to flatten the data structure to simplify further operations
         List<List<String>> namesNested = Arrays.asList(
                 Arrays.asList("Jeff", "Bezos"),
                 Arrays.asList("Bill", "Gates"),
@@ -192,6 +193,31 @@ public class Employee {
         Stream.of("1.1,2.2").mapMultiToDouble((s, consumer) -> {
             Arrays.stream(s.split(",")).mapToDouble(Double::parseDouble).forEach(consumer);
         }).forEach(System.out::println);
+
+//1. What is reduce?
+//reduce is a terminal operation in streams that accumulates elements into a single result.
+//It takes:
+//Identity → starting value (here "")
+//Accumulator → function to combine current result with next element
+//Combiner → (used only in parallel streams, to merge partial results)
+
+//        2. Step-by-Step Example
+//        Let’s reverse "This" → Stream: [T, h, i, s]
+//        Parameters in our case:
+//        Identity = "" (empty string)
+//        Accumulator = (rev, ch) -> ch + rev
+//        rev = current result so far
+//                ch = next character
+//                Combiner = (s1, s2) -> s2 + s1 (used in parallel mode only, ensures proper reversal order)
+
+//3. Why (ch + rev) instead of (rev + ch)?
+//Normal concatenation (rev + ch) would give "This" (same order).
+//Reversing the order (ch + rev) builds the string from right to left.
+
+//4. Role of the Combiner
+//If the stream runs in parallel, partial reversed strings are created in different threads.
+//The combiner (s1, s2) -> s2 + s1 ensures correct merging order when joining partial results.
+
 
         //Stream Creation!
         //Streams can be created from different element sources
