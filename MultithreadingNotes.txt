@@ -1,0 +1,313 @@
+1. Multithreading vs Multiprocessing?
+🔹 Multithreading
+Definition: Multiple threads (lightweight processes) run within the same process.
+Memory: Threads share the same memory space of the parent process.
+Communication: Easy, since all threads share variables.
+Overhead: Less overhead (context switch is faster).
+Best for: Tasks that are I/O-bound (waiting for network, file, DB).
+Problem: Requires synchronization → risk of race conditions, deadlocks.
+
+🔹 Multiprocessing
+Definition: Multiple processes run independently, each with its own memory space.
+Memory: Each process has separate memory → no accidental interference.
+Communication: Harder, needs Inter-Process Communication (IPC)
+Overhead: More overhead (heavy context switch, separate memory).
+Best for: Tasks that are CPU-bound (heavy computation, data processing).
+Problem: Higher memory usage.
+
+| Feature           | Multithreading             | Multiprocessing         |
+| ----------------- | -------------------------- | ----------------------- |
+| Memory sharing    | Shared                     | Separate                |
+| Context switching | Faster                     | Slower                  |
+| Communication     | Easy (shared vars)         | Hard (IPC needed)       |
+| Overhead          | Low                        | High                    |
+| Use case          | I/O-bound tasks            | CPU-bound tasks         |
+| Risk              | Race conditions, deadlocks | More memory consumption |
+
+-------------------------------------------------------------------------------------
+
+2. Locks in Multithreading?
+
+🔹 What are Locks?
+A lock is a synchronization mechanism that ensures only one thread can access a critical section (shared resource) at a time.
+Prevents race conditions (when multiple threads read/write shared data simultaneously).
+
+🔹 Types of Locks in Java
+1. Implicit Locks (Monitor Locks)
+Every Java object has a lock (monitor).
+Used automatically with synchronized keyword.
+When a thread enters a synchronized block/method → it acquires the lock of the object/class.
+Other threads must wait until the lock is released.
+
+2. Explicit Locks (Lock interface)
+   From java.util.concurrent.locks.
+   More flexible than synchronized.
+   Methods:
+   lock() → acquire lock.
+   unlock() → release lock.
+   tryLock() → attempt lock without blocking.
+   lockInterruptibly() → acquire lock but respond to interrupts.
+
+3. ReentrantLock
+Same thread can acquire the lock multiple times
+Keeps count of acquisitions, requires equal number of unlock() calls.
+Supports fairness (queue threads in order).
+
+4. ReadWriteLock
+Separates read and write locks.
+Multiple threads can hold the read lock simultaneously.
+Only one thread can hold the write lock, and it blocks readers until released.
+
+🔑 Interview-ready points
+synchronized → implicit lock, easy to use, less flexible.
+ReentrantLock → explicit lock, tryLock, fairness, interruptible.
+ReadWriteLock → improves performance when reads dominate.
+Always release locks in finally block → to prevent deadlocks.
+
+✅ Why use Lock instead of synchronized?
+Try for lock without blocking (tryLock()).
+Can interrupt threads waiting for a lock.
+Fairness policies (decide order of lock acquisition).
+Read-write distinction for performance.
+
+-------------------------------------------------------------------------------------------------------
+
+- What all are lock-free concepts in Multithreading, for example: AtomicInteger class?
+🔓 Lock-free Concepts in Multithreading (Java)
+
+1. Atomic Variables (java.util.concurrent.atomic)
+Classes like AtomicInteger, AtomicLong, AtomicReference, AtomicBoolean.
+Provide atomic (thread-safe) operations without locks.
+Internally use CAS (Compare-And-Swap) → a CPU-level instruction.
+
+AtomicInteger count = new AtomicInteger(0);
+// Increment atomically
+count.incrementAndGet();
+// Compare and update
+count.compareAndSet(5, 10);
+
+Benefit: Faster than synchronized or ReentrantLock since no blocking.
+
+2. Volatile Keyword
+Ensures visibility of variable changes across threads (all threads read the latest value).
+Doesn’t make operations atomic, but prevents threads from caching stale values.
+Example:
+volatile boolean flag = true;
+
+3. Concurrent Data Structures
+ConcurrentLinkedQueue, ConcurrentSkipListMap, ConcurrentHashMap
+Implemented using non-blocking algorithms (CAS-based).
+Multiple threads can update without explicit locks.
+
+4. ForkJoinPool (Work-Stealing Algorithm)
+Uses lock-free queues for distributing tasks among worker threads.
+Improves performance for divide-and-conquer algorithms.
+
+5. StampedLock (Optimistic Read)
+Optimistic reads are lock-free unless a write happens concurrently.
+Improves read performance.
+
+CounterBenchmark.java
+⚡ Interview Talking Point
+Both approaches give correct results (10M).
+AtomicInteger is often 2–3x faster under high contention.
+Reason: synchronized → OS-level lock (threads block + context switch).
+AtomicInteger → lock-free CAS loop, avoids blockin
+
+---------------------------------------------------------------------------------------
+
+What is executor framework? What is thread pool?
+
+✅ Executor Framework (Java 5+)
+The Executor Framework is a high-level API for managing threads.
+Instead of manually creating and managing threads (new Thread(...).start()), you submit tasks (Runnable or Callable) to an ExecutorService.
+The framework decouples task submission from execution policy.
+You don’t worry how tasks run (new thread? thread pool? delayed?).
+You just submit, and the executor decides.
+
+👉 Key interfaces/classes:
+Executor → simplest interface with execute(Runnable).
+ExecutorService → adds lifecycle management (submit, shutdown).
+ScheduledExecutorService → allows delayed/periodic tasks.
+Implementations → ThreadPoolExecutor, ScheduledThreadPoolExecutor.
+
+✅ Thread Pool
+A thread pool is a group of pre-created worker threads that are reused to execute multiple tasks.
+Threads are not created/destroyed repeatedly → reduces overhead.
+Tasks are put into a queue, and worker threads pick them up.
+👉 Benefits:
+Performance: Reuses threads, avoids overhead of frequent thread creation.
+Scalability: Limits the number of concurrent threads → avoids resource exhaustion.
+Manageability: Executors provide control (shutdown(), awaitTermination()).
+
+🔥 Interview-Ready Comparison
+Without Executor: You’d write new Thread(runnable).start(); each time → costly & hard to manage.
+With Executor/Thread Pool: Threads are reused, better performance, scalable, controlled shutdown.
+
+🔹 Types of Thread Pools in Java (Executor Framework)
+Java provides factory methods in Executors to create commonly used pools:
+
+1. Fixed Thread Pool
+ExecutorService fixedPool = Executors.newFixedThreadPool(5);
+
+Creates a pool with fixed number of threads (e.g., 5).
+If more tasks come in, they wait in a queue until a thread is free.
+✅ Use case: Stable workload, predictable number of threads (e.g., processing requests in batches).
+
+2. Cached Thread Pool
+ExecutorService cachedPool = Executors.newCachedThreadPool();
+
+Creates unbounded pool of threads.
+Reuses idle threads if available, otherwise creates new ones.
+Idle threads are terminated after 60s.
+✅ Use case: Many short-lived asynchronous tasks (e.g., chat messages, small jobs).
+
+3. Single Thread Executor
+   ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+
+   Only one thread executes tasks, in order of submission.
+   Useful when tasks must run sequentially.
+   ✅ Use case: Logging, database updates, file I/O — where order must be preserved.
+
+4. Scheduled Thread Pool
+ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+
+// Run a task after 5s
+scheduler.schedule(() -> System.out.println("Task executed"), 5, TimeUnit.SECONDS);
+// Run repeatedly every 3s
+scheduler.scheduleAtFixedRate(() -> System.out.println("Repeating task"), 0, 3, TimeUnit.SECONDS);
+
+Supports delayed execution and periodic execution.
+✅ Use case: Cron jobs, background health checks, retry mechanisms.
+
+| Thread Pool   | Size                    | When to Use                                |
+| ------------- | ----------------------- | ------------------------------------------ |
+| **Fixed**     | Fixed number of threads | Predictable workload, CPU-bound tasks      |
+| **Cached**    | Unbounded, auto-adjusts | Many short-lived async tasks               |
+| **Single**    | 1 thread only           | Sequential task execution, order-sensitive |
+| **Scheduled** | Configurable            | Periodic/delayed task execution            |
+
+✅ Pro tip for interviews:
+If asked “Which one would you choose?” → Tie your answer to workload pattern:
+“For handling periodic jobs, I’d use ScheduledThreadPoolExecutor.”
+“For batch processing with controlled concurrency, I’d use a FixedThreadPool.”
+
+-----------------------------------------------------------------------------------------------------------
+
+- How have you used multithreading in your API?
+✅ Sample Answer: How I used multithreading in APIs
+
+In my previous project, I worked on building REST APIs in Java (Spring Boot) where we had to handle multiple parallel operations efficiently. I used multithreading and thread pools to improve performance and responsiveness.
+🔹 Example 1: Parallel service calls
+In one API, we needed to fetch data from multiple microservices (like User Service, Order Service, and Payment Service). Instead of calling them sequentially, I used:
+ExecutorService with a FixedThreadPool
+Or CompletableFuture.supplyAsync() for async execution
+
+This allowed multiple calls to run in parallel and significantly reduced API response time.
+🔹 Example 2: Background tasks
+For some APIs, after responding to the client, we had to do non-critical operations (like sending emails, logging, or analytics updates). Instead of blocking the API response, I used:
+@Async in Spring Boot (which internally uses a TaskExecutor thread pool).
+Or a ScheduledExecutorService for periodic background jobs.
+
+🔹 Example 3: Producer-Consumer
+For processing large workloads, we implemented a producer-consumer pattern using:
+BlockingQueue or LinkedBlockingQueue
+Producers added tasks to the queue
+Consumers (worker threads from a thread pool) processed them concurrently.
+This ensured better throughput and load distribution.
+Overall, multithreading helped us:
+Reduce API latency (parallel calls)
+Offload heavy background tasks(async)
+Handle high concurrency without overwhelming the system
+
+✅ If they ask for code snippet
+Here’s a parallel service call example using CompletableFuture:
+
+@RestController
+public class UserController {
+
+    @GetMapping("/user/details")
+    public String getUserDetails() throws Exception {
+        CompletableFuture<String> userFuture = CompletableFuture.supplyAsync(() -> fetchUser());
+        CompletableFuture<String> orderFuture = CompletableFuture.supplyAsync(() -> fetchOrders());
+        CompletableFuture<String> paymentFuture = CompletableFuture.supplyAsync(() -> fetchPayments());
+
+        return CompletableFuture.allOf(userFuture, orderFuture, paymentFuture)
+                .thenApply(v -> userFuture.join() + " | " + orderFuture.join() + " | " + paymentFuture.join())
+                .get();
+    }
+
+    private String fetchUser() { return "User"; }
+    private String fetchOrders() { return "Orders"; }
+    private String fetchPayments() { return "Payments"; }
+}
+
+--------------------------------------------------------------------------------
+
+Q: start vs join vs sleep vs wait for a thread
+🔹 start() vs join() vs sleep() vs wait()
+1. start()
+Belongs to Thread class.
+Used to start a new thread.
+Internally calls run() in a separate call stack.
+Once started, the thread goes to the Runnable state (waiting for CPU scheduling).
+
+Thread t = new Thread(() -> System.out.println("Thread running"));
+t.start();  // new thread created
+
+⚠️ Calling t.run() directly won’t create a new thread, it will run in the main thread.
+
+2. join()
+Belongs to Thread class.
+One thread can wait for another to finish before proceeding.
+Commonly used when a thread’s result is needed before continuing.
+
+Thread t = new Thread(() -> {
+    try { Thread.sleep(1000); } catch (InterruptedException e) {}
+    System.out.println("Thread finished");
+});
+t.start();
+t.join(); // main thread waits until t finishes
+System.out.println("Main continues after join");
+
+3. sleep()
+Belongs to Thread class (static).
+Causes the current thread to pause for given time (milliseconds).
+Thread remains in TIMED_WAITING state, but does not release locks.
+
+System.out.println("Sleeping...");
+Thread.sleep(2000);
+System.out.println("Woke up!");
+
+4. wait()
+Belongs to Object class (not Thread).
+Must be called inside a synchronized block.
+Makes the current thread release the lock and go into the WAITING state until another thread calls notify() or notifyAll() on the same object.
+synchronized(obj) {
+    obj.wait();  // releases lock, waits for notify()
+}
+
+| Method    | Belongs To        | Purpose                             | Releases Lock? | Who wakes it up?           |
+| --------- | ----------------- | ----------------------------------- | -------------- | -------------------------- |
+| `start()` | `Thread`          | Starts new thread                   | N/A            | N/A                        |
+| `join()`  | `Thread`          | Wait for another thread to finish   | No             | Finishes automatically     |
+| `sleep()` | `Thread` (static) | Pause current thread                | No             | Time expires / interrupt   |
+| `wait()`  | `Object`          | Pause + release lock until notified | Yes            | `notify()` / `notifyAll()` |
+
+👉 A common trick interview Q is:
+Q: What’s the difference between sleep() and wait()?
+sleep() → keeps lock, just pauses.
+wait() → releases lock, used for inter-thread communication.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+what notify is used for?
+🔹 notify() in Java Multithreading
+notify() is a method of the Object class.
+It is used to wake up one thread that is waiting (wait()) on the same object’s monitor.
+The awakened thread doesn’t run immediately → it must reacquire the lock before proceeding.
+
+⚡ Interview Tip
+notify() wakes only one waiting thread (chosen randomly if multiple).
+notifyAll() wakes all waiting threads.
+Both must be called inside synchronized block (else IllegalMonitorStateException)

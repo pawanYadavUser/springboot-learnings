@@ -170,6 +170,7 @@ Completely lock-free.
 Just compute hash, go to bucket, and traverse linked list/tree.
 Uses volatile fields so threads see the latest values.
 ✅ Multiple threads can read simultaneously → very fast.
+
 Writes (put, remove)
 Only lock the specific bucket (bin) being updated.
 Done using synchronized on Node level (not entire map).
@@ -397,3 +398,309 @@ ArrayList is ideal here.
 👉 Example: Undo/Redo Stack (like in editors, IDEs)
 Adding/removing from head/tail → O(1).
 LinkedList works better than ArrayList if size changes frequently.
+
+--------------------------------------------------------------------------------------
+
+1. What data structures are used in HashMap?
+Data structures used inside HashMap (Java 8+)
+Array (Bucket array)
+The core structure is an array of Node<K,V>[].
+Each index (called a bucket) is where entries are stored after hashing the key.
+The bucket index = hash(key) % capacity.
+Linked List (for collisions)
+When multiple keys hash to the same bucket, they are chained together as a singly linked list (Node<K,V> objects).
+Before Java 8 → always linked list.
+Balanced Tree (Red-Black Tree)
+Since Java 8, if too many elements end up in the same bucket (default threshold ≥ 8 entries in a bucket), the linked list is converted into a Red-Black Tree.
+Why? To reduce worst-case lookup from O(n) (linked list) → O(log n) (tree).
+
+Summary (Java 8+)
+Array → backbone, stores references to buckets.
+Linked List → handles collisions (when few).
+Red-Black Tree → replaces linked list when bucket grows large (≥ 8 nodes).
+
+HashMap (Java 8+)
+ └── Array of buckets
+      ├── Bucket[0] → Linked List (Node -> Node -> Node)
+      ├── Bucket[1] → Red-Black Tree (NodeA, NodeB...)
+      ├── Bucket[2] → null (empty)
+      └── ...
+
+⚡ In interviews, they often ask:
+👉 “Why was Red-Black Tree introduced in HashMap?”
+Answer:
+To avoid performance degradation to O(n) in case of hash collisions (e.g., if someone attacks with many keys having same hash).
+Using a balanced tree gives O(log n) lookup in such cases.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+- HashMap in synchronized block vs ConcurrentHashMap?
+1. HashMap inside a synchronized block
+Default HashMap is not thread-safe.
+If multiple threads modify it at the same time → race conditions, data corruption, or even infinite loops (before Java 8, in resizing).
+To make it thread-safe, you wrap critical sections with synchronized.
+
+Map<String, String> map = new HashMap<>();
+
+synchronized (map) {
+    map.put("A", "Apple");
+    map.put("B", "Banana");
+}
+
+🔹 Characteristics
+Synchronization is at the whole map level.
+At any given time, only one thread can operate on the map (read/write).
+This becomes a bottleneck under high concurrency.
+Read operations are also blocked if a write is happening.
+
+2. ConcurrentHashMap
+Designed specifically for concurrent access.
+Introduced in Java 5 (java.util.concurrent).
+Internally uses:
+Segmented buckets in Java 7 (locks per segment).
+Bucket-level locks with CAS (compare-and-swap) in Java 8 (much finer granularity).
+Allows multiple threads to read/write concurrently as long as they work on different buckets.
+Example:
+ConcurrentHashMap<String, String> cmap = new ConcurrentHashMap<>();
+cmap.put("A", "Apple");
+cmap.put("B", "Banana");
+🔹 Characteristics
+Better performance under concurrency
+Reads are non-blocking (no lock).
+Writes only block the affected bucket, not the entire map.
+Null keys/values not allowed (to avoid ambiguity in concurrent environments).
+
+| Feature                    | HashMap + synchronized block   | ConcurrentHashMap                     |
+| -------------------------- | ------------------------------ | ------------------------------------- |
+| Thread Safety              | Yes (if synchronized manually) | Yes (built-in)                        |
+| Lock granularity           | Entire map                     | Bucket-level (finer)                  |
+| Performance in concurrency | Poor (bottleneck)              | High (scales well)                    |
+| Null keys/values allowed?  | Yes                            | No                                    |
+| Read operations            | Blocked if synchronized        | Non-blocking                          |
+| Use case                   | Low concurrency, small apps    | High concurrency, multi-threaded apps |
+
+--------------------------------------------------------------------------------------------------------------
+
+- Stack and queue basics, how are they implemented?
+StackLL.java
+Stack (LIFO – Last In, First Out)
+Concept: The last element pushed is the first one to be popped.
+Operations:
+push(x) → insert at top
+pop() → remove from top
+peek() → look at top without removing
+Java provides java.util.Stack class (extends Vector).
+But in modern Java, ArrayDeque is preferred because it’s faster and doesn’t have legacy Vector overhead.
+
+✅ Key Difference:
+Stack (legacy) → synchronized, slower, extends Vector.
+ArrayDeque (modern) → not synchronized, faster, recommended.
+
+Queue (FIFO – First In, First Out)
+Concept: The first element inserted is the first one to be removed.
+Operations:
+enqueue(x) → add at rear
+dequeue() → remove from front
+peek() → see front
+
+
+| Feature  | Stack                           | Queue                           |
+| -------- | ------------------------------- | ------------------------------- |
+| Order    | LIFO (Last In First Out)        | FIFO (First In First Out)       |
+| Use case | Undo, function calls, recursion | Scheduling, resource sharing    |
+| Impl     | Array or Linked List            | Array (circular) or Linked List |
+| Main ops | push, pop, peek                 | enqueue, dequeue, peek          |
+
+
+🔹 Stack (java.util.Stack)
+Legacy class (since Java 1.0, extends Vector).
+Thread-safe → all methods are synchronized
+Slower than ArrayDeque due to synchronization overhead.
+Still works fine, but considered outdated for most use cases.
+Use case:
+If you really need a synchronized stack and don’t want to manage locks.
+Example: legacy systems where Stack is already in use.
+
+🔹 ArrayDeque (java.util.ArrayDeque)
+Introduced in Java 1.6.
+Not synchronized → faster in single-threaded or controlled multithreaded contexts.
+Implemented as a resizable circular array → efficient push, pop, peek
+Preferred for modern applications.
+Use case:
+If you need a stack in single-threaded or performance-critical code.
+Example: parsing, DFS traversal, expression evaluation.
+
+🔹 What if I need thread safety with ArrayDeque?
+You can wrap it:
+Deque<Integer> stack = Collections.synchronizedDeque(new ArrayDeque<>());
+
+
+| Feature        | Stack (Legacy)                 | ArrayDeque (Modern)                                    |
+| -------------- | ------------------------------ | ------------------------------------------------------ |
+| Thread-safety  | Yes (synchronized methods)     | No (but can wrap with `Collections.synchronizedDeque`) |
+| Performance    | Slower (due to sync)           | Faster (no sync overhead)                              |
+| Implementation | Extends `Vector` (array-based) | Resizable circular array                               |
+| Recommended?   | ❌ Avoid for new code           | ✅ Preferred choice                                     |
+
+
+Java has multiple built-in queue implementations in the java.util and java.util.concurrent packages.
+🔹 1. Queue Interface (java.util.Queue)
+Introduced in Java 1.5
+Defines common queue operations:
+offer(e) → add element (returns false if full)
+poll() → remove and return head (null if empty)
+peek() → get head without removing (null if empty)
+
+🔹 2. Common Queue Implementations :- QueueLL.java
+✅ LinkedList
+Implements both Queue and Deque.
+Doubly-linked list internally.
+Can be used as FIFO queue or Deque (double-ended queue).
+
+✅ ArrayDeque
+Resizable circular array.
+Faster than LinkedList.
+Implements Queue and Deque.
+Cannot store null elements.
+
+✅ PriorityQueue
+Elements are ordered according to natural ordering or a Comparator.
+Not FIFO → it gives you the smallest (or highest priority) element first.
+
+🔹 3. Concurrent Queue Implementations (java.util.concurrent)
+ConcurrentLinkedQueue → lock-free, thread-safe queue (FIFO)
+LinkedBlockingQueue → thread-safe, used in producer-consumer.
+ArrayBlockingQueue → fixed-size, bounded queue.
+PriorityBlockingQueue → thread-safe version of PriorityQueue.
+DelayQueue, SynchronousQueue → advanced specialized queues
+
+| Queue Type            | Backed By          | Ordered? | Thread-Safe? | Use Case                    |
+| --------------------- | ------------------ | -------- | ------------ | --------------------------- |
+| LinkedList            | Doubly linked list | FIFO     | ❌            | General purpose             |
+| ArrayDeque            | Circular array     | FIFO     | ❌            | Faster than LinkedList      |
+| PriorityQueue         | Heap               | Priority | ❌            | Scheduling, priority tasks  |
+| ConcurrentLinkedQueue | Linked nodes       | FIFO     | ✅            | Non-blocking multi-threaded |
+| LinkedBlockingQueue   | Linked list        | FIFO     | ✅            | Producer-Consumer           |
+| ArrayBlockingQueue    | Array (fixed size) | FIFO     | ✅            | Bounded blocking queue      |
+
+----------------------------------------------------------------------------------------------------------------
+
+
+Q: ConcurrentLinkedQueue vs LinkedBlocking Queue vs ArrayBlocking Queue, and producer - consumer problem ?
+🔹 1. ConcurrentLinkedQueue
+Lock-free, thread-safe implementation of a queue.
+Uses CAS (Compare-And-Swap) instead of locks → very fast in high-concurrency.
+Unbounded (can grow until memory runs out).
+Non-blocking → threads don’t wait, just fail (offer() returns false if issue).
+
+🔹 2. LinkedBlockingQueue
+Thread-safe blocking queue backed by linked nodes.
+Can be bounded or unbounded (default = Integer.MAX_VALUE).
+Supports blocking operations
+put() → waits if full.
+take() → waits if empty.
+Used a lot in Producer-Consumer problem.
+👉 Use when: multiple producers & consumers need to coordinate with blocking.
+
+🔹 3. ArrayBlockingQueue
+Thread-safe blocking queue backed by an array.
+Fixed-size (bounded) → capacity is set when created.
+Also supports put() and take() (blocking)
+Faster than LinkedBlockingQueue for predictable, bounded workloads.
+👉 Use when: you want a bounded queue with predictable performance.
+
+-----------------------------------------------------------------------------
+
+🔹 Producer-Consumer Problem (Classic)
+Definition:
+One or more Producer threads create data and put it into a queue.
+One or more Consumer threads take data from the queue and process it.
+Problem: we must ensure synchronization so producers don’t overwrite and consumers don’t read empty queues.
+e.g.,
+ProducerConsumerDemo.java
+
+| Queue Type            | Blocking? | Bounded?  | Backed By       | Use Case                             |
+| --------------------- | --------- | --------- | --------------- | ------------------------------------ |
+| ConcurrentLinkedQueue | ❌         | Unbounded | CAS (lock-free) | High throughput, non-blocking        |
+| LinkedBlockingQueue   | ✅         | Optional  | Linked nodes    | Producer-consumer, unbounded/bounded |
+| ArrayBlockingQueue    | ✅         | ✅ Fixed   | Array           | Producer-consumer with fixed buffer  |
+
+e.g., ProducerConsumerWaitNotify.java
+🔹 Key Points to Notice
+synchronized → ensures only one thread modifies the buffer at a time.
+wait() → releases the lock and makes the thread wait.
+notify() → wakes up one waiting thread (either producer or consumer).
+while (condition) → always check in a loop (to avoid spurious wakeups).
+This is lower-level and harder to manage → that’s why Java introduced BlockingQueue
+
+| Approach              | Synchronization Mechanism | Easy to Implement?                   | Recommended Today?             |
+| --------------------- | ------------------------- | ------------------------------------ | ------------------------------ |
+| `wait()` + `notify()` | Manual monitor locks      | ❌ More boilerplate, risk of deadlock | ❌ Only for teaching/interviews |
+| `BlockingQueue`       | Built-in blocking ops     | ✅ Very clean                         | ✅ Yes                          |
+
+
+-------------------------------------------------------------------------------
+
+
+Find duplicates in an array without hashset?
+⚡ Key Idea:
+We used the array itself as a "visited marker" by flipping signs. If we ever try to visit an index that's already negative → we found a duplicate.
+| Approach             | Time       | Space | Notes                          |
+| -------------------- | ---------- | ----- | ------------------------------ |
+| Brute Force          | O(n²)      | O(1)  | Bad for large input            |
+| Sort & Compare       | O(n log n) | O(1)  | Loses original order           |
+| Index Marking (Best) | O(n)       | O(1)  | Works if numbers in range 1..n |
+
+What if we need the original array later?
+Option 1: Restore → After the pass, just flip all negatives back to positive.
+Option 2: Work on a copy of the array instead.
+
+---------------------------------------------------------------------------------------
+
+- Find duplicate strings with latest Java features.
+🔹 Solution 1 – Using Collectors.groupingBy
+🔹 Solution 2 – Using Collections.frequency (simpler, but less efficient)
+🔹 Solution 3 – Using Set trick with Streams
+
+✨ Interview Tip:
+Solution 1 → Best when you want counts + duplicates (scalable).
+Solution 2 → Short but O(n²) (bad for large lists).
+Solution 3 → Simple + efficient O(n).
+
+1️⃣ Collections.frequency
+What it does:
+Counts how many times a given element appears in a collection (List, etc).
+So when finding duplicates:
+You can filter all elements whose Collections.frequency(list, element) > 1.
+
+2️⃣ Collectors.groupingBy
+What it does:
+Groups elements of a stream into a Map according to a key function.
+
+💡 Summary:
+Collections.frequency → Easy to use, good for small lists, O(n²) for duplicates
+Collectors.groupingBy → Powerful for large lists + also gives counts, O(n).
+
+frequencyMap.entrySet().stream()
+Converts the Map into a stream of Map.Entry objects.
+Each entry has a key (the string) and a value (the count).
+Example for {"apple"=2, "banana"=1} → entries:
+Map.Entry("apple", 2)
+Map.Entry("banana", 1)
+
+filter(e -> e.getValue() > 1)
+Keeps only entries where the value (count) is greater than 1.
+After filtering, you get:
+Map.Entry("apple", 2)
+
+map(Map.Entry::getKey) ✅
+Transforms each Map.Entry into its key only.
+Why? Because we only want the duplicate strings, not their counts.
+So after mapping, the stream becomes:
+"apple"
+
+collect(Collectors.toSet())
+Collects all keys (strings) into a Set → ["apple"].
+Collectors.counting() is a built-in collector in Java Streams.
+It counts the number of elements in a stream.
+Returns a Long.
