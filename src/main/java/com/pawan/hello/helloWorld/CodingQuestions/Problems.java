@@ -24,7 +24,7 @@ public class Problems {
         System.out.println(result);
 
 
-        Map<Integer, Integer> resultMap = Arrays.stream(arr).collect(Collectors.groupingBy(s->s,Collectors.counting()));
+//        Map<Integer, Integer> resultMap = Arrays.stream(arr).collect(Collectors.groupingBy(s->s,Collectors.counting()));
 
     }
 }
