@@ -79,3 +79,12 @@ means:
 ➡️ “Push my local main branch to the main branch on the remote repo origin,
 and remember this link so I don’t have to type the branch name every time.”
 
+==================================================================================
+
+
+problem :- PS D:\Nodejs\NodeLearningProject> git pull origin fatal: refusing to merge unrelated histories
+fatal: refusing to merge unrelated histories
+— happens when your local repo and the remote repo on GitHub have different,
+unrelated histories (e.g., you initialized both separately using git init).
+solutions:-
+git pull origin main --allow-unrelated-histories

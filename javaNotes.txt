@@ -103,7 +103,7 @@ Support autoboxing/unboxing.
 String & StringBuffer / StringBuilder
 String → Immutable sequence of characters.
 StringBuffer → Mutable, thread-safe.
-StringBuilder → Mutable, faster (non-synchronized).
+StringBuilder → Mutable, faster (non-synchronized), not thread safe.
 
 Math
 Provides methods for mathematical operations (sqrt, pow, abs, sin, etc.).
@@ -112,7 +112,6 @@ System
 Provides system-related utilities (System.out.println, System.gc(), etc.).
 
 Class
-
 Represents metadata of classes (used in Reflection API).
 
 Throwable → Exception & Error
@@ -292,7 +291,6 @@ Abstract Class	Like a Vehicle blueprint: It can have some implemented features (
 Child classes (Car, Bike) inherit and complete the implementation.
 
 2️⃣ Java Code Example
-Interface Example
 interface Remote {
     void turnOn();
     void turnOff();
@@ -348,12 +346,12 @@ Can have instance variables.
 Supports single inheritance (only 1 parent class).
 
 3️⃣ When to Use Each
-Feature / Use Case	Interface	Abstract Class
-Purpose	Define capabilities (what to do)	Define base class with partial implementation (what & how)
-Methods	Only abstract (Java 7); default/static in Java 8+	Abstract + concrete
-Variables	Only constants (static final)	Instance variables allowed
-Inheritance	Multiple inheritance allowed	Single inheritance only
-Example Scenario	“Any device that can be turned on/off”	“All vehicles share fuel type and displayFuel(), but startEngine() differs”
+Feature/UseCase	    Interface	                                        Abstract Class
+Purpose	            Define capabilities (what to do)	                Define base class with partial implementation (what & how)
+Methods	            Only abstract (Java 7); default/static in Java 8+	Abstract + concrete
+Variables	        Only constants (static final)	                    Instance variables allowed
+Inheritance	        Multiple inheritance allowed	                    Single inheritance only
+Example Scenario	“Any device that can be turned on/off”	            “All vehicles share fuel type and displayFuel(), but startEngine() differs”
 
 Interview Tip
 “Use an interface when you want to define what a class can do without caring how.
@@ -571,12 +569,12 @@ class Demo implements A, B {
 }
 
 ✅ Summary Table
-Feature	Default Method	Static Method
-Keyword	default	static
+Feature	    Default Method	                                    Static Method
+Keyword	    default	                                            static
 Inherited?	Yes (but overridden if class defines same method)	❌ No
-Call syntax	object.method()	InterfaceName.method()
-Purpose	Add new methods without breaking existing code	Utility/helper methods inside interface
-Conflict?	Yes, if multiple interfaces define same method	No conflict (always tied to interface name)
+Call syntax	object.method()	                                    InterfaceName.method()
+Purpose	    Add new methods without breaking existing code	    Utility/helper methods inside interface
+Conflict?	Yes, if multiple interfaces define same method	    -No conflict (always tied to interface name)
 
 ⚡ Golden Rule for Interview:
 Class methods > Interface default methods.
@@ -856,8 +854,11 @@ The Young Generation is further divided into the Eden Space and Survivor Spaces,
 while the Old Generation contains long-lived objects that have survived multiple garbage collection cycles.
 
 Stack – Stores method calls, local variables, and references. Each thread has its own stack.
+
 Method Area (Metaspace in Java 8+) – Stores class metadata, static variables, and method code.
+
 PC Register – Holds the current instruction address of a thread.
+
 Native Method Stack – Used for native (C/C++) method calls.
 
 2. What is the difference between stack memory and heap memory?
@@ -949,7 +950,7 @@ To the new interview new topics to be done!
 
 31/08/2025
 1. Hash table!
-Different hashing techniques, like division hashing, multiplicative hashing, and advanced methods like double hashing or chaining, spread keys more uniformly,
+Different hashing techniques, like division hashing, multiplicative hashing, and advanced methods like double hash ing or chaining, spread keys more uniformly,
 which reduces collisions and improves overall hash table efficiency.
 Better hash functions and algorithms mean fewer collisions, leading to consistently faster lookups and updates in practice.
 
@@ -1466,7 +1467,7 @@ So in short:
 👉 Function.identity() = x -> x
 👉 We use it when we want to group by the element itself.
 
-2. ava: method collect in interface java.util.stream.IntStream cannot be applied to given types;
+2. Java: method collect in interface java.util.stream.IntStream cannot be applied to given types;
 required: java.util.function.Supplier<R>,java.util.function.ObjIntConsumer<R>,java.util.function.BiConsumer<R,R>
 found: java.util.stream.Collector<java.lang.Object,capture#1 of ?,java.util.Map<java.lang.Object,java.lang.Long>>
 reason: cannot infer type-variable(s) R (actual and formal argument lists differ in length)

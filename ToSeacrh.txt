@@ -1,0 +1,14 @@
+1. String pool vs heap?
+2. single threaded application and multi-threaded application ?
+3. Reflection api?
+4. design patterns?
+5. hashcode? why its created and where its used for normal class ?
+6. difference between copyOnWriteArrayList and arrayList?
+7. Collectors class  vs Collections class?
+
+mapToObj -> Returns an object-valued Stream consisting of the results
+of applying the given function to the elements of this stream
+
+8. serialVersionUID?
+9. RMI?
+10.

@@ -12,6 +12,7 @@ public class StringExample {
         s2.append("String");
         System.out.println("s2 : "+s2);
 
+
         StringBuffer s3 = new StringBuffer("Java");
         s3.append("String");
         System.out.println("s3 : "+s3);

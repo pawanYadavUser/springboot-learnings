@@ -298,6 +298,7 @@ the exception is thrown only when the iterator detects a modCount mismatch on th
 🔹 Requirements
 Frequent updates
 Frequent additions
+
 Frequent removals
 Efficient searching
 So we want fast insert, delete, and search.
@@ -704,3 +705,72 @@ Collects all keys (strings) into a Set → ["apple"].
 Collectors.counting() is a built-in collector in Java Streams.
 It counts the number of elements in a stream.
 Returns a Long.
+
+------------------------------------------------------------------------------
+
+25/11/2025
+
+Q: 6. difference between copyOnWriteArrayList and arrayList?
+🚀 CopyOnWriteArrayList (COWAL)
+CopyOnWriteArrayList is a thread-safe variant of ArrayList where all mutating operations (add, set, remove)
+ create a new copy of the underlying array.
+
+✅ Why is it special?
+✔ Thread-safe without using locks for reading
+Reads happen on a separate immutable snapshot.
+So reads are very fast and never blocked.
+✔ Ideal for scenarios where:
+Many reads
+Very few writes
+Example: event listeners, routing tables, configs.
+
+⚙️ How it works internally?
+Whenever you call add(), remove(), or set():
+It creates a copy of the array
+Updates the new array
+Replaces the reference
+So write operations are slow and costly, but safe.
+
+Key point:
+Even if another thread modifies the list during iteration,
+the iterator does NOT throw ConcurrentModificationException.
+
+| Feature            | CopyOnWriteArrayList   | ArrayList   | Vector                  |
+| ------------------ | ---------------------- | ----------- | ----------------------- |
+| Thread-safe        | ✔ Yes                  | ❌ No        | ✔ Yes (synchronized)    |
+| Read performance   | ⭐ Very Fast            | Fast        | Slow                    |
+| Write performance  | ❌ Slow (copies array)  | Fast        | Slow                    |
+| Fail-safe iterator | ✔ Yes                  | ❌ No        | ❌ No                    |
+| Use Case           | Many reads, few writes | Normal list | Legacy thread-safe list |
+
+⚠️ Disadvantages
+High memory usage → every write creates a new array
+Not suitable for frequent updates
+Expensive for large lists
+
+⭐ When to use?
+Use CopyOnWriteArrayList when:
+✔ You have 95% reads and 5% writes
+✔ You want safe iteration without locks
+✔ You cannot afford ConcurrentModificationException
+✔ You need thread-safe but fast reads
+
+✅ 1. Reads in COWAL are lock-free
+CopyOnWriteArrayList uses a volatile reference to an internal immutable array.
+All read operations (get(), iteration) directly read the volatile array, without any lock
+No synchronization → No thread blocking → Extremely fast and scalable under concurrency.
+✔ Readers never wait
+Even if multiple threads are reading simultaneously, reads are:
+lock-free
+non-blocking
+wait-free
+
+❌ 2. Reads in ArrayList (multi-threaded) require external locking
+ArrayList itself is not thread-safe.
+If multiple threads read concurrently without synchronization, it’s unsafe.
+So in real multi-threaded scenarios, you must add locking:
+synchronized (list) {
+    list.get(i);
+}
+Or use Collections.synchronizedList(), which also locks on each read.
+❗This locking slows down reads significantly.

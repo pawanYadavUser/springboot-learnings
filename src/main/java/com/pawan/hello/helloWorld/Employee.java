@@ -73,12 +73,13 @@ public class Employee {
 //        filter()
 
 //        produces a new stream that contains elements of the original stream that pass a given test (specified by a predicate).
-
+        System.out.println("Printing slaries greater than 2000");
         List<Employee> empWithSalaryGT20000 = employees.stream().filter(emp -> emp.salary > 20000).collect(Collectors.toList());
         empWithSalaryGT20000.stream().map(emp->emp.salary).forEach(System.out::println);
 
         //findFirst
         //findFirst() returns an Optional for the first entry in the stream. The Optional can, of course, be empty
+        System.out.println("EMployee detail featched using findFirst () method");
         Employee employee = employees.stream()
                 .filter(e -> e.salary> 20000)
                 .findFirst()
@@ -88,6 +89,7 @@ public class Employee {
 
 //        toArray
 //We saw how we used collect() to get data out of the stream. If we need to get an array out of the stream, we can simply use toArray():
+        System.out.println("Printing employee details using toArray()");
         Employee [] newArray = employees.stream().toArray(Employee[]::new);
         System.out.println(Arrays.toString(newArray));
 //        The syntax Employee[]::new creates an empty array of Employee—which is then filled with elements from the stream.
@@ -98,10 +100,10 @@ public class Employee {
                 Arrays.asList("Jeff", "Bezos"),
                 Arrays.asList("Bill", "Gates"),
                 Arrays.asList("Mark", "Zuckerberg"));
-
         List<String> namesFlatStream = namesNested.stream()
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+        System.out.println("\n Flatmap example using stream \n");
         namesFlatStream.stream().forEach(System.out::println);
 //        Notice how we were able to convert the Stream<List<String>> to a simpler Stream<String>—using the flatMap() API.
 
@@ -111,6 +113,8 @@ public class Employee {
 //
 //peek() can be useful in situations like this. Simply put,
 // it performs the specified operation on each element of the stream and returns a new stream that can be used further. peek() is an intermediate operation:
+
+        System.out.println("\nExample using peek method\n");
         Employee[] arrayOfEmpsForPeek = {
                 new Employee(1, "Jeff Bezos", 100000.0),
                 new Employee(2, "Bill Gates", 200000.0),
@@ -253,6 +257,11 @@ public class Employee {
         System.out.println("Checking if the list contains any string with char a");
         System.out.println(list.stream().anyMatch(element -> element.contains("a")));
 
+        System.out.println("\nString containing ul as substring : "+list.stream().anyMatch(element -> element.contains("ul"))+"\n");
+
+        System.out.println("\nString containing ul as substring : "+list.stream().filter(element -> element.contains("ul")).findFirst().orElse("null")
+                +"\n");
+
         // boolean anyMatch(Predicate<? super T> predicate) Returns whether any elements of this stream match the provided predicate.
 
         //void forEach(Consumer<? super T> action)  Performs an action for each element of this stream.
@@ -261,6 +270,7 @@ public class Employee {
 
         System.out.println("Printing string having character a in it");
         list.stream().filter(element-> element.contains("a")).forEach(System.out::println);
+
 
         //mapping
         //To convert elements of a Stream by applying a special function to them and to collect these new elements into a Stream
