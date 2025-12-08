@@ -1,0 +1,275 @@
+1. Explain SOLID principles?
+
+Liskov principle :-
+-Derived classes must be substitutable for their base classes without breaking the application.
+
+Why is LSP important in OOP?
+Expected Points:
+-Ensures reliability and correctness.
+-Prevents unexpected behavior.
+-Enables polymorphism safely.
+
+How do you detect that a class violates LSP?
+Signs:
+-Overridden methods throw UnsupportedOperationException.
+-Subclass reduces functionality.
+-Subclass breaks parent’s expected behavior.
+-Subclass changes constraints or rules of the parent.
+
+What happens when LSP is violated?
+Expected Points:
+-Code breaks when subclass is substituted.
+-Unexpected behavior.
+-Violations of polymorphism.
+-Increased bug risk and maintenance effort.
+
+How to ensure a subclass satisfies LSP?
+Rules:
+-Do not strengthen preconditions.
+-Do not weaken postconditions.
+-Preserve invariants (object rules should not change).
+-Keep parent behavior consistent.
+
+How is LSP connected to method overriding?
+Answer:
+-When overriding a method, the subclass must not change:
+-Input expectations (preconditions)
+-Output guarantees (postconditions)
+-Behavior contract defined by the parent
+
+Difference between LSP and OCP (Open Closed Principle)?
+-LSP focuses on correct substitution.
+-OCP focuses on extending behavior without modifying existing code.
+-LSP is required to achieve OCP properly.
+
+Can throwing exceptions violate LSP?
+Yes, when:
+-Subclass throws new, broader exceptions.
+-Subclass throws exceptions that parent’s contract doesn’t allow.
+
+Can returning a broader or different type violate LSP?
+Yes, if:
+-Returned values change expected behavior.
+-Returned result violates constraints (example: null instead of a default object).
+
+Example 1: Flying Bird vs Penguin (Very common interview example)
+class Bird {
+    public void fly() {
+        System.out.println("Bird is flying");
+    }
+}
+Subclass that violates LSP
+class Penguin extends Bird {
+    @Override
+    public void fly() {
+        throw new UnsupportedOperationException("Penguins can't fly!");
+    }
+}
+🔥 How it breaks LSP?
+public void makeBirdFly(Bird bird) {
+    bird.fly();
+}
+When we substitute Penguin:
+makeBirdFly(new Penguin());  // Runtime exception!
+Violations:
+❌ Code breaks → Unexpected exception
+❌ Unexpected behavior → Client expects all Birds to fly
+❌ Polymorphism breaks → Subclass cannot perform the parent behavior
+❌ Bug risk increases → Every place using Bird must add instanceof checks
+
+⭐ Correct LSP-compliant fix:
+Split into separate interfaces:
+interface FlyingBird { void fly(); }
+interface WalkingBird { void walk(); }
+
+Penguin → only implements WalkingBird.
+---------------------------------------------------------------------------------
+
+Interface segregation principle:-
+
+🔥 1. What is the Interface Segregation Principle (ISP)?
+Expected Answer:
+Clients should not be forced to depend on interfaces they do not use.
+Instead of one large interface, create smaller, specific interfaces.
+
+🔥 2. Why is ISP important?
+Expected Points:
+-Avoids bloated (fat) interfaces
+-Reduces unnecessary method implementations
+-Prevents classes from having empty or dummy implementations
+-Makes systems more maintainable and flexible
+
+🔥 3. Give a real example where ISP is violated.
+Bad Interface:
+interface Worker {
+    void work();
+    void eat();
+    void sleep();
+}
+Subclass violating ISP:
+class Robot implements Worker {
+    public void work() { }
+    public void eat() {}  // ❌ Robot doesn't eat!
+    public void sleep() {} // ❌ Robot doesn't sleep!
+}
+Robot is forced to implement methods it doesn’t need 👎
+
+🔥 4. How do you fix the above violation using ISP?
+Correct interfaces:
+interface Workable { void work(); }
+interface Eatable { void eat(); }
+interface Sleepable { void sleep(); }
+
+Now Robot only implements what it needs:
+class Robot implements Workable {
+    public void work() {}
+}
+
+
+🔥 5. How do you identify ISP violations in a system?
+Look for:
+-Classes implementing methods with empty bodies
+-Classes throwing UnsupportedOperationException
+-Interfaces with too many unrelated methods
+-Classes only using a few methods from a large interface
+
+🔥 6. Can abstraction be used to avoid ISP violations?
+Yes. Splitting interfaces into:
+-Role-specific
+-Behavior-specific
+Allows classes to depend only on what they use.
+
+🔥 7. Does ISP lead to more interfaces? Is that a problem?
+Yes, ISP increases the number of interfaces, but:
+-Code becomes cleaner
+-Interfaces become more reusable
+-Classes depend only on necessary behavior
+-Easier to mock in testing
+So more interfaces = better separation.
+
+🔥 8. Can you give an ISP example from real-life Java libraries?
+Java’s InputStream and OutputStream
+Each interface has focused responsibilities
+They avoid combining reading + writing into one interface
+This design follows ISP.
+
+🔥 9. How does ISP relate to LSP?
+ISP: “Don't force me to implement what I don’t need.”
+LSP: “If I extend something, I must honor its behavior.”
+ISP reduces the risk of LSP violations
+
+🔥 10. Explain ISP using a payment example.
+Bad Interface:
+interface Payment {
+    void pay();
+    void refund();
+    void applyDiscount();
+}
+UPI payment doesn’t support refunds → forced to implement unnecessary method.
+Discount-exclusive payments forced to implement discount logic.
+Fix:
+interface Payable { void pay(); }
+interface Refundable { void refund(); }
+interface Discountable { void applyDiscount(); }
+
+Now each payment type chooses what it supports.
+
+--------------------------------------------------------------------------
+
+Dependency inversion principle:-
+The principle of dependency inversion refers to the decoupling of software modules.
+This way, instead of high-level modules depending on low-level modules, both will depend on abstractions.
+
+1. What is the Dependency Inversion Principle (DIP)?
+Expected Answer:
+-High-level modules should not depend on low-level modules.
+-Both should depend on abstractions (interfaces).
+
+2. How is DIP different from regular abstraction?
+Most people mix this up.
+Expected Answer:
+Abstraction hides implementation details.
+DIP forces both high-level and low-level code to depend on that abstraction.
+DIP changes the dependency direction → details depend on abstraction
+
+3. What is an example of DIP in a layered architecture?
+Good Answer:
+-Controller → depends on Service interface
+-Service → depends on Repository interface
+-Repository → concrete DB implementation
+None of the higher layers know the low-level details.
+
+4. How does DIP improve unit testing?
+Expected Answer:
+-Allows mocking low-level dependencies
+-Reduces reliance on actual DB, network, or file system
+-Enables dependency injection for test doubles
+
+5. What is “inversion” in DIP?
+Expected Answer:
+Normally, high-level code depends on low-level code.
+DIP inverts this direction → both depend on abstraction.
+
+6. Can DIP be applied without DI frameworks like Spring?
+Yes
+Ways:
+Constructor Injection
+Factory Pattern
+Service Locator Pattern
+Passing dependencies manually
+DIP does not require Spring — Spring only automates it.
+
+7. Give an example of DIP violation in real life.
+Example:
+A logging class directly uses FileLogger.
+class SystemManager {
+    private FileLogger logger = new FileLogger();
+}
+You cannot replace FileLogger with ConsoleLogger easily → tightly coupled
+
+8. How do factories help in implementing DIP?
+Expected Answer:
+Factories create concrete objects.
+High-level modules depend only on the factory interface, not the concrete implementation.
+
+9. How does DIP relate to Open/Closed Principle?
+Expected Answer:
+-DIP enables OCP.
+-You can add new concrete implementations without modifying high-level code.
+-High-level modules remain unchanged → they rely on interfaces
+
+10. Does using interfaces always mean DIP is followed?
+NO.
+Example:
+class A {
+  B b;
+  A() { b = new B(); }  // Even though B implements an interface, A depends on B
+}
+Even with interfaces, direct instantiation violates DIP.
+
+11. Is DIP violated if an interface becomes too large?
+Yes → that also violates Interface Segregation Principle (ISP).
+ISP supports DIP by ensuring abstractions are clean and focused.
+
+12. Provide a small DIP-compliant code example (short answer).
+interface Storage{
+    void save(String data);
+}
+
+public class FileStorage implements Storage{
+    void save(String data){
+
+    }
+}
+
+class DataService {
+    private Storage storage;
+
+    public DataService(Storage storage){
+        this.storage = storage;
+    }
+
+    public void saveData(String data){
+        storage.save(data);
+    }
+}

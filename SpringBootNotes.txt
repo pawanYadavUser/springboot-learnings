@@ -986,3 +986,85 @@ e.g.,
 @Autowired
 @Qualifier("creditCardPayment")
 private PaymentService paymentService;
+
+
+-----------------------------------------------------------------------------
+Q: What are bean scopes and bean lifecycle in springboot?
+“In Spring, a bean scope defines how many instances of a bean the container should create and how long it should live. The most commonly used scopes are:
+Singleton (default): One instance for the entire application. Used for stateless services.
+Prototype: A new instance is returned every time the bean is requested.
+Request: One instance per HTTP request (used in web applications).
+Session: One instance per user session.
+Application: One instance per ServletContext.
+About the Bean Lifecycle, Spring manages the entire lifecycle of a bean. The steps are:
+
+Instantiation: Spring creates the bean object.
+
+Dependency Injection: It injects all required dependencies.
+
+Aware callbacks: If the bean implements interfaces like BeanNameAware or ApplicationContextAware, Spring calls them.
+
+BeanPostProcessor (before init): postProcessBeforeInitialization() runs.
+
+Initialization: Spring performs initialization by calling:
+@PostConstruct
+afterPropertiesSet() (if implementing InitializingBean)
+Custom init method
+
+BeanPostProcessor (after init): postProcessAfterInitialization() runs.
+Note:-
+When you implement a BeanPostProcessor, it logs (or processes) every single bean that Spring creates — not just your beans.
+This includes internal Spring framework beans, infrastructure beans, and proxy beans.
+That’s why you see weird names like:
+"org.springframework.context.annotation.internalAutowiredAnnotationProcessor"
+"org.springframework.aop.config.internalAutoProxyCreator"
+"requestMappingHandlerMapping"
+"mvcValidator"
+"handlerExceptionResolver"
+"myService"
+"aopProxy"
+"scopedTarget.myBean"
+
+✅ Why does this happen?
+BeanPostProcessor is global.
+Spring registers your BeanPostProcessor before any beans are created, so it intercepts:
+Controller beans
+Repository beans
+Service beans
+Configuration beans
+Internal Spring beans
+AOP proxies
+Auto-generated beans
+So your postProcessBeforeInitialization() or postProcessAfterInitialization() method gets invoked hundreds of times, once per bean.
+
+🔥 Why does Spring create so many beans?
+Because Spring Boot auto-configures:
+MVC (DispatcherServlet, converters, resolvers)
+Web security
+AOP
+Caching
+Jackson
+DataSource
+Health endpoints
+Actuator
+Configuration processors
+All of these become Spring-managed beans → which means your BeanPostProcessor intercepts them.
+
+🧠 Interview-Friendly Explanation
+“BeanPostProcessor applies to every bean in the IoC container.
+So it will process user-defined beans as well as internal framework beans.
+This is why you see many beans and unusual bean names in the logs.”
+
+Destruction: When the context closes, Spring calls:
+@PreDestroy
+destroy()
+Custom destroy method.
+
+This lifecycle ensures proper setup and cleanup of beans, and scopes define how many instances Spring should manage.”
+🎯 Interview-Ready Answer (30 seconds)
+“Spring Bean Lifecycle starts with instantiation, then dependency injection.
+If the bean implements Aware interfaces, Spring calls their methods.
+Next, BeanPostProcessors run before initialization.
+Initialization includes @PostConstruct, afterPropertiesSet(), and any custom init method.
+After that, postProcessAfterInitialization runs and the bean becomes ready.
+During shutdown, Spring calls @PreDestroy, destroy(), and custom destroy methods for cleanup.”

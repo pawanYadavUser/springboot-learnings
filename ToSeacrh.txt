@@ -11,4 +11,8 @@ of applying the given function to the elements of this stream
 
 8. serialVersionUID?
 9. RMI?
-10.
+10.sql joins and interview questions!
+11. normalization in db?
+12. How indexing works?
+13. Java 8 and Java 17 new features?
+14.

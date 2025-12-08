@@ -64,7 +64,98 @@ public class OOPSDemo {
 So in my projects, I use OOPs to design modular, maintainable, and reusable code. For example, services extend base classes,
 entities encapsulate fields, and polymorphism helps in handling different request types flexibly
 
-----------------
+✅ 1. Encapsulation
+Definition:
+Wrapping data (variables) and methods (functions) together inside a single unit (class) and restricting direct access to the data.
+Example:
+class BankAccount {
+    private double balance;        // hidden
+    public void deposit(double amt) { balance += amt; }
+    public double getBalance() { return balance; }
+}
+Advantages:
+Protects data from unauthorized access
+Maintains integrity of data
+Reduces coupling
+Makes classes easier to modify and maintain
+Interview line:
+“Encapsulation ensures controlled access to data using getters/setters, improving security and maintainability.”
+
+✅ 2. Abstraction
+Definition:
+Showing only the essential details and hiding unnecessary implementation.
+Example:
+abstract class Payment {
+    abstract void pay();
+}
+Advantages:
+-Reduces complexity
+-Decouples implementation from use
+-Increases code readability
+ Interview line:
+“Abstraction hides the ‘how’ and exposes only the ‘what,’ making systems easier to extend.”
+
+✅ 3. Inheritance
+Definition:
+Allows one class to acquire properties and behavior of another class.
+Example:
+class Vehicle {}
+class Car extends Vehicle {}
+
+Advantages:
+-Reusability of code
+-Simplifies modification
+-Supports hierarchical classification
+
+Interview line:
+“Inheritance lets us reuse existing logic, enabling hierarchical design and less code duplication.”
+
+✅ 4. Polymorphism
+Definition:
+Ability of an object to behave in multiple ways.
+Types:
+Compile-time (method overloading)
+Runtime (method overriding)
+
+Example (Runtime):
+class Payment { void pay() {} }
+class UpiPayment extends Payment { void pay() {} }
+
+Advantages:
+Flexibility in code
+Easy to extend or modify behavior
+Enables loose coupling
+
+Interview line:
+“Polymorphism allows one interface, many implementations, increasing extensibility.”
+
+✅ 5. Association
+Definition:
+A relationship between two independent classes.
+Example:
+A Teacher “has” a Student.
+Advantages:
+Helps model real-world relationships
+
+✅ 6. Aggregation (Weak Association)
+Definition:
+One object has another object, but both can exist independently.
+Example:-
+A Team has Players (players can exist without team).
+Advantages:
+Increases modular design
+Supports reuse without ownership
+
+✅ 7. Composition (Strong Association)
+Definition:
+One object owns another object; if the owner is destroyed, the owned object is also destroyed.
+Example
+A House has Rooms (rooms cannot exist without a house).
+Advantages:
+Strong lifecycle control
+Leads to well-structured, modular design
+
+----------------------------------------------------------------------------------------------------------------
 
 2. - Is Java 100% object-oriented?
  Reasons why Java is not fully OOP:
@@ -1078,6 +1169,8 @@ Common causes of slow MySQL queries include missing indexes, inefficient query l
 large result sets, poor schema design, and hardware or resource bottlenecks.
 Diagnosis involves enabling the slow query log, using the EXPLAIN command to check execution plans, reviewing indexing, analyzing server resources,
 and optimizing queries by narrowing returned data and improving joins.
+
+
 Optimization can include adding or tuning indexes, rewriting queries, normalizing tables, and adjusting server configuration parameters for your workload.
 
 To identify columns for indexing, analyze queries with EXPLAIN to see which columns are often used in WHERE clauses, JOINs, or as sorting/grouping keys.
@@ -1103,10 +1196,6 @@ Cons:
 May cause performance issues, especially for complex or nested views since queries run in real time.
 Cannot have indexes or triggers directly, relying on underlying table optimization.
 Dependencies on underlying tables mean that changes or drops can break views without warning.
-
-When a view is queried, MySQL substitutes the view’s SQL definition into the query and executes it as if it were a subquery,
-so data is always fetched fresh from the base tables. This can impact performance, especially with complex or nested views, since no indexes exist on the view itself,
-but it improves security by restricting access to only the columns or rows defined in the view for specific users.
 
 MySQL rewrites queries involving views by expanding the view’s SQL definition into the query and executing it against the underlying tables,
 which means no data is stored in the view itself. This allows for strong security boundaries by exposing only necessary data,

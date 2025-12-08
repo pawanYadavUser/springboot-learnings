@@ -774,3 +774,7 @@ synchronized (list) {
 }
 Or use Collections.synchronizedList(), which also locks on each read.
 ❗This locking slows down reads significantly.
+
+==================================================================================
+
+
