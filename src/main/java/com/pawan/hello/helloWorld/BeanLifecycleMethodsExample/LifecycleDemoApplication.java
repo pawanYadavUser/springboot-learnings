@@ -18,9 +18,7 @@ public class LifecycleDemoApplication implements CommandLineRunner {
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = SpringApplication.run(LifecycleDemoApplication.class, args);
         // Close context after a short sleep so destruction hooks run and you can see output
-        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-        ctx.close();
-    }
+     }
 
     @Override
     public void run(String... args) throws Exception {

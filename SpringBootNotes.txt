@@ -1068,3 +1068,55 @@ Next, BeanPostProcessors run before initialization.
 Initialization includes @PostConstruct, afterPropertiesSet(), and any custom init method.
 After that, postProcessAfterInitialization runs and the bean becomes ready.
 During shutdown, Spring calls @PreDestroy, destroy(), and custom destroy methods for cleanup.”
+
+===================================================================================================
+
+Q: what are actuators?
+Spring Boot Actuators are production-ready features that give you insights, metrics, health checks,
+and control endpoints to monitor and manage your application in real time.
+✅ What are Actuators in simple terms?
+Actuators expose REST endpoints to help you know:
+Is the application UP or DOWN?
+What are the memory/CPU metrics?
+Which beans are created?
+What environment variables are loaded?
+What thread dumps exist?
+What configurations are active?
+Health of DB / Redis / Messaging system
+Application info (version, build details)
+
+🟩 1. Add the dependency
+In Spring Boot:
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+
+🟩 2. Common Actuator Endpoints
+| Endpoint               | Purpose                               |
+| ---------------------- | ------------------------------------- |
+| `/actuator/health`     | App health (UP/DOWN)                  |
+| `/actuator/info`       | App info (version, description)       |
+| `/actuator/beans`      | List all Spring beans                 |
+| `/actuator/loggers`    | View/update logging levels            |
+| `/actuator/metrics`    | System metrics (CPU, memory, threads) |
+| `/actuator/env`        | View environment properties           |
+| `/actuator/mappings`   | All controller mappings               |
+| `/actuator/heapdump`   | Download heap dump                    |
+| `/actuator/threaddump` | View thread dump                      |
+| `/actuator/conditions` | Auto-configuration report             |
+
+Actuators provide monitoring and management endpoints that help DevOps teams track application health,
+metrics, thread usage, logs, and internal configurations.
+They are essential for production environments because they support observability, troubleshooting,
+and system monitoring.
+
+To expose ALL endpoints:
+management.endpoints.web.exposure.include=*
+
+To see DB health details:
+management.endpoint.health.show-details=always
+
+Default path is /actuator.
+To change:
+management.endpoints.web.base-path=/manage

@@ -1,0 +1,162 @@
+                 +---------------------+
+                 |   Eureka Server     |
+                 |  (Service Registry) |
+                 +----------+----------+
+                            |
+        --------------------+--------------------
+        |                                         |
++------------------+                      +------------------+
+|  Service A       |                      |  Service B       |
+| (Order Service)  |  ---> calls --->     | (Product Service)|
+| uses Feign       |                      | exposes REST API |
++------------------+                      +------------------+
+
+----------------------------------------------------------------------
+
+✅ Step 1: Create Eureka Server
+pom.xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+EurekaServerApplication.java
+@EnableEurekaServer
+@SpringBootApplication
+public class EurekaServerApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaServerApplication.class, args);
+    }
+}
+
+application.properties
+server.port=8761
+eureka.client.register-with-eureka=false
+eureka.client.fetch-registry=false
+
+Run it → Visit:
+👉 http://localhost:8761
+
+-------------------------------------------------------------------------------
+
+✅ Step 2: Service B (Product Service)
+This service exposes a REST API.
+
+pom.xml dependencies
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+ProductServiceApplication.java
+@EnableEurekaClient
+@SpringBootApplication
+public class ProductServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ProductServiceApplication.class, args);
+    }
+}
+
+application.properties
+server.port=8082
+spring.application.name=product-service
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka
+
+Controller exposing API
+@RestController
+public class ProductController {
+
+    @GetMapping("/product/{id}")
+    public String getProduct(@PathVariable int id) {
+        return "Product " + id + " details from Product Service";
+    }
+}
+
+-----------------------------------------------------------------------------------
+
+✅ Step 3: Service A (Order Service)
+This service uses Feign Client to call Product Service.
+
+pom.xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+OrderServiceApplication.java
+@EnableFeignClients
+@EnableEurekaClient
+@SpringBootApplication
+public class OrderServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(OrderServiceApplication.class, args);
+    }
+}
+
+application.properties
+server.port=8081
+spring.application.name=order-service
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka
+
+✨ Feign Client Interface
+This is how Service A calls Service B without knowing its IP.
+@FeignClient(name = "product-service") // lookup in Eureka
+public interface ProductClient {
+
+    @GetMapping("/product/{id}")
+    String getProduct(@PathVariable("id") int id);
+}
+
+✨ Order Controller Calling Product Service
+@RestController
+@RequiredArgsConstructor
+public class OrderController {
+
+    private final ProductClient productClient;
+
+    @GetMapping("/order/{id}")
+    public String createOrder(@PathVariable int id) {
+        String product = productClient.getProduct(id);
+        return "Order Created! | " + product;
+    }
+}
+
+🚀 Now Run All Services
+Start Eureka Server (port 8761)
+Start Product Service (port 8082)
+Start Order Service (port 8081)
+
+Visit Eureka dashboard:
+👉 http://localhost:8761
+You will see:
+order-service   → UP (1 instance)
+product-service → UP (1 instance)
+
+🎉 Testing Communication
+Call Order API:
+👉 http://localhost:8081/order/10
+Response:
+Order Created! | Product 10 details from Product Service
+👏 Service A (Order Service) successfully called Service B (Product Service)!
+
+If you want next:
+I can also provide:
+✅ A version using WebClient instead of Feign
+✅ A version using Kafka asynchronous events
+✅ A docker-compose setup for running all 3 services
+✅ Architecture diagram with load balancer and gateway
