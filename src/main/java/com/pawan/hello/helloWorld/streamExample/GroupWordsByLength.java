@@ -1,6 +1,7 @@
 package com.pawan.hello.helloWorld.streamExample;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +39,19 @@ public class GroupWordsByLength {
         Map<Character,List<String>> grouped5 = wordList.stream()
                 .collect(Collectors.groupingBy(s->s.charAt(0)));
         System.out.println(grouped5);
+
+        Map<String, Long> duplicateCharAndTheirCount = Arrays.asList("Hello world".split("")).stream().
+                filter(s-> !s.equalsIgnoreCase(" ")).
+                collect(Collectors.groupingBy(s->s, Collectors.counting()));
+
+        //get all the characters and their respective counts
+        System.out.println(duplicateCharAndTheirCount);
+
+        //get only those characters which are duplicate
+        System.out.println(duplicateCharAndTheirCount.entrySet()
+                .stream()
+                .filter(e->e.getValue()>1)
+                .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
 
     }
 }

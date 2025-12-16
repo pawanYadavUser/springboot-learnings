@@ -707,12 +707,55 @@ public class SwitchExample {
     }
 }
 
+Switch with yield (When logic is complex)
+public class DiscountCalculator {
+
+    public static int getDiscount(String customerType) {
+
+        return switch (customerType) {
+            case "PREMIUM" -> {
+                int discount = 20;
+                yield discount;
+            }
+            case "REGULAR" -> {
+                int discount = 10;
+                yield discount;
+            }
+            default -> 0;
+        };
+    }
+}
+
+Switch + Sealed Class (Advanced but Impressive ⭐)
+sealed interface Payment permits Card, Upi {}
+
+final class Card implements Payment {}
+final class Upi implements Payment {}
+
+public class PaymentService {
+
+    static String process(Payment payment) {
+        return switch (payment) {
+            case Card c -> "Card payment";
+            case Upi u -> "UPI payment";
+        };
+    }
+}
+📌 No default
+📌 Compiler checks exhaustiveness
 💡 Why this is better
 No break
 Returns a value
 More readable and less error-prone
 🗣 Interview Explanation
 Java 17 switch expressions allow returning values and grouping cases, making code cleaner and safer.
+| Old Switch     | Java 17 Switch |
+| -------------- | -------------- |
+| Needs `break`  | No `break`     |
+| Statement only | Expression     |
+| Error-prone    | Safer          |
+| Less readable  | More readable  |
+
 
 6️⃣ Text Blocks
 Used for:

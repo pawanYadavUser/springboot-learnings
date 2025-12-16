@@ -1,0 +1,53 @@
+1. reduce method !
+-----------------------------------------------
+2. mapToInt() method!
+mapToInt() converts the stream to a primitive stream,
+which avoids boxing overhead and provides numeric operations like sum, max, and average directly.
+| Feature     | map()           | mapToInt() |
+| ----------- | --------------- | ---------- |
+| Output      | Stream<Integer> | IntStream  |
+| Boxing      | Yes             | No         |
+| Performance | Slower          | Faster     |
+| Numeric ops | Limited         | Rich       |
+
+What if I write mapToInt() without String::length?
+❌ This will NOT compile
+words.stream().mapToInt();
+❌ Compiler error (conceptually)
+mapToInt(IntFunction<? super T>) is not applicable
+
+Java must know how to convert each element (String)
+Into a primitive int
+Without providing a function:
+Java has no idea what int value to extrac
+
+Valid Alternatives (Same Meaning)
+.mapToInt(s -> s.length())
+.mapToInt(String::length)
+.mapToInt(s -> s.length() * 2)
+
+This won’t work
+.mapToInt(Integer::valueOf)   // wrong type
+.mapToInt(s -> s)             // not int
+.mapToInt(null)               // invalid
+
+----------------------------------------------------
+
+3. Collectors.toMap()
+Collect into a Map<String, Integer>
+needs keyMapper, valueMapper, and mergerFunction
+
+Why is this needed?
+If the same word appears twice
+toMap() would throw an exception
+This merge function keeps the existing value
+🗣 Interview line:
+The merge function resolves key collisions in Collectors.toMap
+
+Convert map to entry stream
+.entrySet().stream()
+
+Find entry with max value
+.max(Map.Entry.comparingByValue())
+
+------------------------------------------------------
