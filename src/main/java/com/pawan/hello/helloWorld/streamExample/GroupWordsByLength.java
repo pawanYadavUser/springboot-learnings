@@ -1,10 +1,9 @@
 package com.pawan.hello.helloWorld.streamExample;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toSet;
 
 public class GroupWordsByLength {
     public static void main(String[] args) {
@@ -12,8 +11,8 @@ public class GroupWordsByLength {
         Map<Integer, Long> grouped = words.stream()
                 .collect(Collectors.groupingBy(String::length, Collectors.counting()));
 
-        Map<Integer, List<String>> grouped2 = Arrays.asList("Apple", "bat", "ball", "cat", "elephant")
-                        .stream().collect(Collectors.groupingBy(String::length));
+        Map<Integer, Set<String>> grouped2 = Arrays.asList("Apple", "bat", "bat", "ball", "cat", "elephant")
+                        .stream().collect(Collectors.groupingBy(String::length, Collectors.toSet()));
 
         System.out.println(grouped);
         System.out.println(grouped2);
@@ -35,7 +34,7 @@ public class GroupWordsByLength {
         System.out.println(grouped4);
 
 //        Groups word by their first character
-        List<String> wordList = Arrays.asList("apple","bat","banana","ball","cat","carrot");
+        List<String> wordList = Arrays.asList("apple","bat","banana","ball","cat","carrot","parrot");
         Map<Character,List<String>> grouped5 = wordList.stream()
                 .collect(Collectors.groupingBy(s->s.charAt(0)));
         System.out.println(grouped5);

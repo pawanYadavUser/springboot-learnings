@@ -98,10 +98,13 @@ public class StreamReduceMethodExamples {
 
     public static void main(String[] args) {
         /*
-            Before we look deeper into using the Stream.reduce() operation, let’s break down the operation’s participant elements into separate blocks. That way, we’ll understand more easily the role that each one plays.
-            Identity – an element that is the initial value of the reduction operation and the default result if the stream is empty
+            Before we look deeper into using the Stream.reduce() operation, let’s break down the operation’s participant elements into separate blocks.
+            That way, we’ll understand more easily the role that each one plays.
+            Identity – an element that is the initial value of the reduction operation and the default resu
+            lt if the stream is empty
             Accumulator – a function that takes two parameters: a partial result of the reduction operation and the next element of the stream
-            Combiner – a function used to combine the partial result of the reduction operation when the reduction is parallelized or when there’s a mismatch between the types of the accumulator arguments and the types of the accumulator implementation
+            Combiner – a function used to combine the partial result of the reduction operation when the reduction is parallelized or
+            when there’s a mismatch between the types of the accumulator arguments and the types of the accumulator implementation
         */
         List<String> letters = Arrays.asList("a","b","c","d");
         System.out.println("result 1 via accumulator expression : "+letters.stream().reduce("",(partialResult, element)-> partialResult+element));
@@ -111,6 +114,8 @@ public class StreamReduceMethodExamples {
         System.out.println("Uppercase version : "+letters.stream().reduce("",(partialResult, element)-> partialResult.toUpperCase()+element.toUpperCase()));
 
         //we can use reduce() in a parallelized stream
+
+
         /*
         When a stream executes in parallel, the Java runtime splits the stream into multiple substreams.
         In such cases, we need to use a function to combine the results of the substreams into a single one.
@@ -136,7 +141,8 @@ public class StreamReduceMethodExamples {
         //stateless and deterministic: the operation doesn’t have state and produces the same output for a given input
         //We should fulfill all these conditions to prevent unpredictable results.
         //
-        //As expected, operations performed on parallelized streams, including reduce(), are executed in parallel, hence taking advantage of multi-core hardware architectures.
+        //As expected, operations performed on parallelized streams, including reduce(), are executed in parallel,
+        // hence taking advantage of multi-core hardware architectures.
 
 
         List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);

@@ -15,4 +15,12 @@ of applying the given function to the elements of this stream
 11. normalization in db?
 12. How indexing works?
 13. Java 8 and Java 17 new features?
-14.
+14. What is functional programming , give an example of such coding practice?
+15. what is gang-of-four design pattern?
+16. Why is polymorphism important in oop? what we gonna lose , if there is no polymorphism in java?
+17. when to use abstract clases or when to use interfaces while coding in enterprise java application?
+18. static factory methods
+19.
+
+
+

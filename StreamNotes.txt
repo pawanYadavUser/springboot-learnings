@@ -51,3 +51,82 @@ Find entry with max value
 .max(Map.Entry.comparingByValue())
 
 ------------------------------------------------------
+
+4. groupingBy Collectors
+https://www.baeldung.com/java-groupingby-collector
+The static factory methods Collectors.groupingBy() and Collectors.groupingByConcurrent() provide us with functionality similar to the ‘GROUP BY’ clause in the SQL language.
+We use them for grouping objects by some property and storing results in a Map instance.
+
+But before that, static factory method:-
+A static factory method is a static method that returns an instance of a class, instead of using a constructor directly (new).
+Simple definition
+An alternative to constructors for creating objects, with more control and flexibility.
+
+User user = new User("Pawan", 30);
+
+User user = User.of("Pawan", 30);
+
+Why use a static factory method?
+1️⃣ Meaningful names (unlike constructors)
+Constructors must have the class name. Static methods can explain intent
+LocalDate.now()
+LocalDate.of(2025, 12, 21)
+Much clearer than multiple constructors.
+
+2️⃣ Can control object creation
+You can:
+Return an existing object
+Cache objects
+Return a subclass
+public static Boolean valueOf(boolean b) {
+    return b ? Boolean.TRUE : Boolean.FALSE;
+}
+
+3️⃣ Can return different implementations
+Very useful in backend / system design.
+public static List<String> createList() {
+    return new ArrayList<>();
+}
+Caller doesn’t care about the actual implementation.
+
+4️⃣ Avoid constructor overloading hell
+Instead of:
+new User("Pawan", 30)
+new User("Pawan", 30, "India")
+new User("Pawan", 30, "India", true)
+You get:
+User.basic("Pawan", 30)
+User.withAddress("Pawan", 30, "India")
+
+5️⃣ Can validate before creating object
+public static User of(String name, int age) {
+    if (age < 0) {
+        throw new IllegalArgumentException("Age cannot be negative");
+    }
+    return new User(name, age);
+}
+
+| Method Name     | Meaning                   |
+| --------------- | ------------------------- |
+| `of()`          | Create from given params  |
+| `valueOf()`     | Convert value             |
+| `getInstance()` | Singleton                 |
+| `newInstance()` | New object                |
+| `from()`        | Convert from another type |
+
+| Feature                  | Constructor        | Static Factory            |
+| ------------------------ | ------------------ | ------------------------- |
+| Name                     | Fixed (class name) | Flexible                  |
+| Can return cached object | ❌                  | ✅                         |
+| Can return subclass      | ❌                  | ✅                         |
+| Can have logic           | Limited            | Rich                      |
+| Can be overridden        | ❌                  | ❌ (but behavior flexible) |
+
+Static factory methods are often used in:
+Factory Method pattern
+Singleton
+Prototype (sometimes)
+Frameworks (Spring, Hibernate, Java SDK).
+
+Stream grouping by method example types:-
+1.  give me a stream example to use groupingBy with a Complex Map Key Type
