@@ -51,6 +51,7 @@ Find entry with max value
 .max(Map.Entry.comparingByValue())
 
 ------------------------------------------------------
+21-12-25
 
 4. groupingBy Collectors
 https://www.baeldung.com/java-groupingby-collector
@@ -127,6 +128,39 @@ Factory Method pattern
 Singleton
 Prototype (sometimes)
 Frameworks (Spring, Hibernate, Java SDK).
+----------------------------------------------------------------------------------
+21-12-25
 
 Stream grouping by method example types:-
 1.  give me a stream example to use groupingBy with a Complex Map Key Type
+
+2. Stream example with groupingBy + Collectors.mapping().
+6️⃣ Downstream collector: Collectors.mapping(...)
+Collectors.mapping(
+    element -> transformedValue,
+    downstreamCollector
+)
+e.g.,
+
+Collectors.mapping(
+    String::length,
+    Collectors.toList()
+)
+This is the downstream collector for each group.
+What mapping does:
+It transforms each element before collecting it.
+String::length
+Converts a word into its length
+Converts a word into its length
+"apple"  -> 5
+"ant"    -> 3
+"banana" -> 6
+"ball"   -> 4
+"carrot" -> 6
+
+When should you use Collectors.mapping() ❓
+Use it when:
+✔ You are grouping
+✔ But you don’t want the original object
+✔ You want a derived value instead
+

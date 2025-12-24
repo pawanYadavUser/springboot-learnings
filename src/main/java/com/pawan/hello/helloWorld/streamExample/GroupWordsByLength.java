@@ -8,13 +8,18 @@ import static java.util.stream.Collectors.toSet;
 public class GroupWordsByLength {
     public static void main(String[] args) {
         List<String> words = Arrays.asList("Apple", "bat", "ball", "cat", "elephant");
+
+        Map<Integer, Long> groupedByStringLength = words.
+                stream().
+                collect(Collectors.groupingBy(String::length, Collectors.counting()));
+
         Map<Integer, Long> grouped = words.stream()
                 .collect(Collectors.groupingBy(String::length, Collectors.counting()));
 
         Map<Integer, Set<String>> grouped2 = Arrays.asList("Apple", "bat", "bat", "ball", "cat", "elephant")
                         .stream().collect(Collectors.groupingBy(String::length, Collectors.toSet()));
 
-        System.out.println(grouped);
+        System.out.println("group list based on string length : "+groupedByStringLength);
         System.out.println(grouped2);
 
         //Group numbers as even or odd!
@@ -46,11 +51,16 @@ public class GroupWordsByLength {
         //get all the characters and their respective counts
         System.out.println(duplicateCharAndTheirCount);
 
-        //get only those characters which are duplicate
-        System.out.println(duplicateCharAndTheirCount.entrySet()
-                .stream()
-                .filter(e->e.getValue()>1)
-                .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
+//        //get only those characters which are duplicate
+//        System.out.println(duplicateCharAndTheirCount.entrySet()
+//                .stream()
+//                .filter(e->e.getValue()>1)
+//                .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue)));
+
+        System.out.println(duplicateCharAndTheirCount.entrySet().
+                stream().
+                filter(e -> e.getValue()>1).
+                collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     }
 }

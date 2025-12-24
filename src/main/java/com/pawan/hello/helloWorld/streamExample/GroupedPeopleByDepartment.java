@@ -33,13 +33,14 @@ public class GroupedPeopleByDepartment {
         // ]
         // "Finance"->[Diana]
 
-        Map<String, List<Employee>> groupedByDepart = employees.stream()
-                .collect(Collectors.groupingBy(Employee::getDepartment));
+        Map<String, List<String>> groupedByDepart = employees.stream()
+                .collect(Collectors.groupingBy(Employee::getDepartment,
+                        Collectors.mapping(Employee::getName, Collectors.toList())));
 
         System.out.println(groupedByDepart);
 
-        groupedByDepart.forEach((depart,employeeList)->{
-            System.out.println(depart+"->"+employeeList.stream().map(Employee::getName).toList());
-        });
+//        groupedByDepart.forEach((depart,employeeList)->{
+//            System.out.println(depart+"->"+employeeList.stream().map(Employee::getName).toList());
+//        });
     }
 }
