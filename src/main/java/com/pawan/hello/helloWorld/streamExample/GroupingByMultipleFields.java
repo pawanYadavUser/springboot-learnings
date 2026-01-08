@@ -25,6 +25,10 @@ class Worker {
     String getName() { return name; }
 }
 
+//4️⃣ Group by Multiple Fields using Composite Key
+record DeptRole(String department, String role) {}
+
+
 
 public class GroupingByMultipleFields {
 
@@ -64,45 +68,46 @@ public class GroupingByMultipleFields {
         );
 
         System.out.println("Grouped by depart, role and count : "+groupedByDepartAndRoleAndSummingSalary);
-//4️⃣ Group by Multiple Fields using Composite Key
-//Code
-        record DeptRole(String department, String role) {}
 
-        Map<DeptRole, List<Employee>> flatGroup =
-                employees.stream()
-                        .collect(Collectors.groupingBy(
-                                e -> new DeptRole(e.getDepartment(), e.getRole())
-                        ));
+//        //4️⃣ Group by Multiple Fields using Composite Key
+////        record DeptRole(String department, String role) {}
+//        Map<DeptRole, List<Employee>> flatGroup =
+//                workers.stream()
+//                        .collect(Collectors.groupingBy(
+//                                e -> new DeptRole(e.getDepartment(), e.getRole())
+//                        ));
 
 
 
 //        5️⃣ Group by multiple fields → store only names
         Map<String, Map<String, List<String>>> namesGrouped =
-                employees.stream()
+                workers.stream()
                         .collect(Collectors.groupingBy(
-                                Employee::getDepartment,
+                                Worker::getDepartment,
                                 Collectors.groupingBy(
-                                        Employee::getRole,
+                                        Worker::getRole,
                                         Collectors.mapping(
-                                                Employee::getName,
+                                                Worker::getName,
                                                 Collectors.toList()
                                         )
                                 )
                         ));
+        System.out.println("named group : "+namesGrouped);
 
 
 //        6️⃣ Same logic using 3 fields (Department → Role → Salary Range)
-        Map<String, Map<String, Map<String, List<Employee>>>> tripleGroup =
-                employees.stream()
-                        .collect(Collectors.groupingBy(
-                                Employee::getDepartment,
-                                Collectors.groupingBy(
-                                        Employee::getRole,
-                                        Collectors.groupingBy(
-                                                e -> e.getSalary() > 65000 ? "HIGH" : "LOW"
-                                        )
-                                )
-                        ));
+//        Map<String, Map<String, Map<String, List<Long> tripleGroup =
+//                workers.stream()
+//                        .collect(Collectors.groupingBy(
+//                                Worker::getDepartment,
+//                                Collectors.groupingBy(
+//                                        Worker::getRole,
+//                                        Collectors.mapping(
+//                                                e -> e.getSalary() > 65000 ? "HIGH" : "LOW",
+//                                                Collectors.toList()
+//                                        )
+//                                )
+//                        ));
 
     }
 

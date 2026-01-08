@@ -1120,3 +1120,126 @@ management.endpoint.health.show-details=always
 Default path is /actuator.
 To change:
 management.endpoints.web.base-path=/manage
+
+================================================================================
+
+27/12/2025
+
+http://interviewbit.com/spring-boot-interview-questions/
+
+Q: What is dependency Injection?
+The process of injecting dependent bean objects into target bean objects is called dependency injection.
+Setter Injection: The IOC container will inject the dependent bean object into the target bean object by calling the setter method.
+Constructor Injection: The IOC container will inject the dependent bean object into the target bean object by calling the target bean constructor.
+Field Injection: The IOC container will inject the dependent bean object into the target bean object by Reflection API.
+
+Constructor injection
+| Criterion      | Result      | Why                             |
+| -------------- | ----------- | ------------------------------- |
+| Unit testing   | ✅ Excellent | No Spring, no reflection        |
+| Immutability   | ✅ Yes       | `final` field                   |
+| Mandatory deps | ✅ Yes       | Cannot create object without it |
+
+
+Setter Injection ⚠️ (OPTIONAL DEPENDENCY)
+| Criterion      | Result | Why                            |
+| -------------- | ------ | ------------------------------ |
+| Unit testing   | ⚠️ OK  | Must remember setter           |
+| Immutability   | ❌ No   | Field cannot be `final`        |
+| Mandatory deps | ❌ No   | Object exists in invalid state |
+
+
+Field Injection ❌ (AVOID)
+| Criterion      | Result   | Why                        |
+| -------------- | -------- | -------------------------- |
+| Unit testing   | ❌ Poor   | Needs Spring or reflection |
+| Immutability   | ❌ No     | No `final`                 |
+| Mandatory deps | ❌ Hidden | Dependency invisible       |
+
+
+📊 Final Comparison Table (INTERVIEW READY)
+| Injection Type       | Unit Test | Immutability | Mandatory Deps | Verdict |
+| -------------------- | --------- | ------------ | -------------- | ------- |
+| Constructor          | ✅ Easy    | ✅ Yes        | ✅ Yes          | ⭐⭐⭐⭐⭐   |
+| Setter               | ⚠️ Medium | ❌ No         | ❌ No           | ⭐⭐      |
+| Field                | ❌ Hard    | ❌ No         | ❌ Hidden       | ❌       |
+| Lombok + Constructor | ✅ Easy    | ✅ Yes        | ✅ Yes          | ⭐⭐⭐⭐⭐   |
+
+
+🎯 Golden Rule (Remember this)
+If a dependency is mandatory → Constructor Injection
+If a dependency is optional → Setter Injection
+Never use Field Injection in production code
+
+-------------------------------------------------------------------------------------------
+
+Q: What is unit testing , explain in simple terms wrt constructor injection?
+1️⃣ First: What is Unit Testing? (Very simple)
+👉 Unit testing means testing ONE small unit (class or method) in isolation
+without running the full application or Spring Boot.
+
+In your case, the unit is: OrderServiceConstructor
+You want to check:
+“Does placeOrder() work correctly if I give it a PaymentService?”
+
+@Test — What is this?
+This annotation comes from JUnit
+It tells Java:
+“This method is a test case, not normal application code”
+JUnit will:
+Run this method automatically
+Check if it passes or fails
+
+Why fake it?
+Because:-
+You don’t want real payment logic
+You just want to test OrderService logic
+👉 This fake object is called a mock (or stub).
+
+What is this proving?
+You are not using Spring
+You are not starting the application
+You are just using new
+This is possible only because of constructor injection.
+📌 This line proves:
+Constructor injection makes the class easy to test
+
+Test starts
+ ↓
+Create fake PaymentService
+ ↓
+Create OrderService with fake dependency
+ ↓
+Call placeOrder()
+ ↓
+Fake paymentService.pay() runs
+ ↓
+Returns "mock payment"
+ ↓
+assertEquals passes
+ ↓
+Test SUCCESS ✅
+
+Why is this test IMPORTANT?
+It proves 3 things:
+✅ 1. Business logic works
+placeOrder() returns what it should
+✅ 2. Dependency is replaceable
+You can swap real payment with fake one
+✅ 3. Code is well-designed
+No Spring, no DB, no server required
+
+🔴 What would happen with Field Injection?
+OrderServiceField service = new OrderServiceField();
+service.placeOrder(); // 💥 NullPointerException
+Because:
+You cannot inject dependency manually
+You need Spring context
+
+🔑 Core Concept to Remember (Very Important)
+Unit tests test YOUR code, not Spring, not DB, not APIs
+That’s why constructor injection is powerful.
+
+One-Sentence Explanation (Interview Level)
+This unit test creates a fake implementation of PaymentService, injects it via constructor, calls the method under test,
+and verifies the output using an assertion—without starting Spring or using real dependencies.

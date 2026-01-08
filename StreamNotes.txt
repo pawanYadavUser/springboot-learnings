@@ -1,5 +1,5 @@
 1. reduce method !
------------------------------------------------
+-----------------------------------------------------------------------------------------------------
 2. mapToInt() method!
 mapToInt() converts the stream to a primitive stream,
 which avoids boxing overhead and provides numeric operations like sum, max, and average directly.
@@ -31,7 +31,7 @@ This won’t work
 .mapToInt(s -> s)             // not int
 .mapToInt(null)               // invalid
 
-----------------------------------------------------
+-----------------------------------------------------------------------------------------------------
 
 3. Collectors.toMap()
 Collect into a Map<String, Integer>
@@ -50,7 +50,7 @@ Convert map to entry stream
 Find entry with max value
 .max(Map.Entry.comparingByValue())
 
-------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 21-12-25
 
 4. groupingBy Collectors
