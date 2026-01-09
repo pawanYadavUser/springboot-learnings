@@ -661,6 +661,15 @@ Spring Boot REST response
 Database query results
 Event objects
 
+What records CANNOT do ❌
+| Limitation                        | Reason                      |
+| --------------------------------- | --------------------------- |
+| Fields cannot be mutable          | Records are immutable       |
+| Cannot extend another class       | Implicitly extends `Record` |
+| No setters                        | By design                   |
+| Cannot have instance initializers | Use constructors instead    |
+
+
 | Feature     | Class          | Record        |
 | ----------- | -------------- | ------------- |
 | Boilerplate | High           | Very low      |

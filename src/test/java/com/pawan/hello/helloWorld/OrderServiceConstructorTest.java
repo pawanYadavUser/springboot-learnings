@@ -18,5 +18,7 @@ public class OrderServiceConstructorTest {
 
         //verify behaviour
         assertEquals("mock payment",mockPayment.pay());
+        //verify behaviour
+        assertEquals("mock payment", service.placeOrder());
     }
 }

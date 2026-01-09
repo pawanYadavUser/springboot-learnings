@@ -42,3 +42,6 @@ Controller tests vs service tests
 If you want, say:
 “Next, show Mockito version”
 and I’ll build on THIS SAME project
+
+22. Why i didnt use final while defining methods for field and setter injection?
+23. Annotations:- Autowired, COnfiguration, Component, EnableAutoConfiguration, SpringbootConfiguration
