@@ -45,3 +45,18 @@ and I’ll build on THIS SAME project
 
 22. Why i didnt use final while defining methods for field and setter injection?
 23. Annotations:- Autowired, COnfiguration, Component, EnableAutoConfiguration, SpringbootConfiguration
+
+24. If you want, I can also explain:
+    How Exception handling differs (@ControllerAdvice)
+    What happens when you return ResponseEntity<?>
+
+25. If you want, I can next explain:
+Bean lifecycle (creation → destruction)
+How Spring resolves multiple implementations
+Difference between @Component and @Bean
+
+26. If you want, next I can explain:
+    @Configuration vs @Component
+    Bean lifecycle in depth
+    How Spring handles multiple beans of same type
+    @Primary vs @Qualifier

@@ -1243,3 +1243,489 @@ That’s why constructor injection is powerful.
 One-Sentence Explanation (Interview Level)
 This unit test creates a fake implementation of PaymentService, injects it via constructor, calls the method under test,
 and verifies the output using an assertion—without starting Spring or using real dependencies.
+
+===================================================================================================
+
+Interview Questions from interviewBits
+
+1. What is the difference between @RestController and @Controller in Spring Boot?
+@Controller Map of the model object to view or template and make it human readable but @RestController simply returns the
+object and object data is directly written in HTTP response as JSON or XML.
+
+@Controller
+Used for MVC (Model–View–Controller) applications
+Typically returns a view name (HTML, JSP, Thymeleaf, etc.)
+Response is rendered using a ViewResolver
+To return JSON/XML, you must explicitly add @ResponseBody
+
+@RestController
+Used for REST APIs
+Automatically returns JSON/XML
+No view rendering
+Internally = @Controller + @ResponseBody
+
+| Feature                | `@Controller`        | `@RestController`       |
+| ---------------------- | -------------------- | ----------------------- |
+| Purpose                | Web MVC (views)      | REST APIs               |
+| Returns                | View name by default | JSON/XML by default     |
+| View Resolver          | Yes                  | No                      |
+| `@ResponseBody` needed | Yes (for API)        | No                      |
+| Best use case          | HTML pages           | Backend services / APIs |
+
+When to use what?
+✅ Use @Controller
+When building web pages (Thymeleaf, JSP, etc.)
+✅ Use @RestController
+When building REST APIs for frontend/mobile apps
+-----------------------------------------------------------
+2. Whats the difference between mvc app and rest api app?
+1️⃣ MVC App (Model–View–Controller App)
+An MVC app is a server-side rendered application where:
+The backend generates the UI (HTML)
+Browser directly displays what the server sends
+Browser → Server → Controller → View (HTML) → Browser
+
+What backend returns
+HTML pages
+CSS/JS (sometimes)
+Data embedded inside HTML
+
+Where it’s used
+Traditional web apps
+Admin panels
+Internal tools
+Apps using Thymeleaf, JSP
+
+Pros
+✅ Simple
+✅ SEO-friendly
+✅ Less frontend complexity
+Cons
+❌ UI tightly coupled to backend
+❌ Harder to build mobile apps
+❌ Not ideal for modern SPAs
+
+2️⃣ REST API App
+What it is
+A REST API app:
+Backend only provides data
+Frontend (React, Angular, Mobile app) handles UI
+Flow
+Browser / Mobile / App → API → JSON → Frontend renders UI
+
+What backend returns
+JSON or XML
+HTTP status codes
+
+Where it’s used
+React / Angular / Vue apps
+Mobile apps (Android / iOS)
+Microservices
+Backend-for-frontend
+
+Pros
+✅ Frontend & backend decoupled
+✅ Reusable APIs
+✅ Scales well
+✅ Works with mobile apps
+Cons
+❌ Needs separate frontend
+❌ Slightly more setup
+
+| Feature         | MVC App         | REST API App             |
+| --------------- | --------------- | ------------------------ |
+| UI Rendering    | Server-side     | Client-side              |
+| Response Type   | HTML            | JSON / XML               |
+| Frontend        | Part of backend | Separate                 |
+| Controller Type | `@Controller`   | `@RestController`        |
+| Best For        | Simple web apps | Modern web & mobile apps |
+
+3. How Spring handles MVC vs REST internally?
+Both MVC and REST in Spring use the same core pipeline.
+HTTP Request
+   ↓
+DispatcherServlet   (Front Controller)
+   ↓
+Handler Mapping
+   ↓
+Controller Method
+   ↓
+Handler Adapter
+   ↓
+Response Processing
+   ↓
+HTTP Response
+👉 The difference is NOT in request routing
+👉 The difference is in response handling
+
+1️⃣ DispatcherServlet (Common for both)
+Single entry point for all HTTP requests
+Defined by Spring MVC framework
+Decides which controller method should handle the request
+Tomcat → DispatcherServlet → Spring
+✔ Same for MVC and REST
+✔ No difference here
+
+2️⃣ Handler Mapping (Common)
+Spring scans:
+@Controller
+@RestController
+@RequestMapping, @GetMapping, etc.
+It builds a map like:
+/home     → HomeController.home()
+/users/1  → UserController.getUser()
+✔ Same mapping logic for both
+
+3️⃣ Controller Invocation (Common)
+Spring calls the matched method.
+Example:
+@GetMapping("/users/1")
+public User getUser() { ... }
+At this point:
+Spring does not yet know if this is MVC or REST
+It just has a return value
+
+4️⃣ 🔥 Where MVC vs REST Actually Split
+Key Decision:
+Is @ResponseBody present?
+Annotation	Implies
+@Controller	❌ No
+@RestController	✅ Yes (implicitly)
+Spring checks:
+Is this response body data or a view name?
+
+5️⃣ MVC Internal Flow (@Controller)
+Example
+@Controller
+public class HomeController {
+    @GetMapping("/home")
+    public String home() {
+        return "home";
+    }
+}
+Internal Handling
+Method returns "home"
+Spring assumes this is a view name
+ViewResolver kicks in
+Finds template:
+home.html (Thymeleaf)
+or home.jsp
+View engine renders HTML
+HTML is sent to browser
+Internal Chain
+Controller → ViewResolver → View → HTML
+📌 No JSON serialization
+📌 No HttpMessageConverter
+
+6️⃣ REST Internal Flow (@RestController)
+Example
+@RestController
+public class UserController {
+
+    @GetMapping("/user")
+    public User getUser() {
+        return new User("Pawan", 28);
+    }
+}
+Internal Handling
+Method returns User object
+@ResponseBody is detected
+Spring skips ViewResolver
+HttpMessageConverter is selected
+Jackson converts object → JSON
+JSON written directly to response body
+Internal Chain
+Controller → HttpMessageConverter → JSON
+📌 No view rendering
+📌 Pure data response
+
+7️⃣ What is HttpMessageConverter?
+It converts Java ↔ HTTP body
+Converter	Purpose
+MappingJackson2HttpMessageConverter	JSON
+StringHttpMessageConverter	Text
+ByteArrayHttpMessageConverter	Binary
+FormHttpMessageConverter	Form data
+
+Spring picks one based on:
+Accept header
+Return type
+Content-Type
+
+Summary
+| Stage          | MVC               | REST                 |
+| -------------- | ----------------- | -------------------- |
+| Entry          | DispatcherServlet | DispatcherServlet    |
+| Routing        | HandlerMapping    | HandlerMapping       |
+| Controller     | `@Controller`     | `@RestController`    |
+| Output         | View name         | Data                 |
+| Processor      | ViewResolver      | HttpMessageConverter |
+| Final Response | HTML              | JSON                 |
+
+Spring doesn’t care if it’s MVC or REST until the controller returns something.
+
+---------------------------------------------------------------------------
+
+3. How content negotiation works (Accept header)
+Content negotiation in Spring is how Spring decides which format (JSON, XML, text, etc.) to send back based on the client’s Accept header.
+1️⃣ What is Content Negotiation?
+Content negotiation =
+👉 Client tells server what formats it can accept
+👉 Server chooses the best one it can produce
+
+Client says (Accept header): Accept: application/json
+Server responds:
+Content-Type: application/json
+
+2️⃣ Accept Header (Client Side)
+The Accept header can contain multiple media types with priorities.
+Simple
+Accept: application/json
+
+Multiple formats
+Accept: application/json, application/xml
+With priority (quality factor q)
+Accept: application/xml;q=0.9, application/json;q=0.8
+Higher q = higher preference.
+
+3️⃣ Where Spring Handles This Internally
+After your controller method returns data:
+Controller
+   ↓
+@ResponseBody detected
+   ↓
+ContentNegotiationManager
+   ↓
+HttpMessageConverter selected
+   ↓
+Response written
+
+6️⃣ Using produces to Restrict Output
+@GetMapping(value = "/user", produces = "application/json")
+public User getUser() {
+    return new User("Pawan", 28);
+}
+If client sends:
+Accept: application/xml
+Result:
+406 Not Acceptable
+
+7️⃣ What if Accept Header is Missing?
+If no Accept header:
+Spring uses default media type
+Usually:
+application/json
+(because Jackson is on classpath)
+
+📌 Browsers often send:
+Accept: text/html,application/xhtml+xml,application/xml
+Which is why:
+MVC apps return HTML
+REST APIs still return JSON (due to @ResponseBody)
+
+9️⃣ ContentNegotiationManager (Advanced)
+Spring uses ContentNegotiationManager to decide media type based on:
+Accept header (most common)
+URL extension (/user.json) ❌ discouraged
+Request parameter (?format=json) ❌ discouraged
+Spring Boot defaults to Accept-header-based negotiation.
+
+🔟 Common Interview Traps ⚠️
+❓ Why JSON returned even when browser Accepts HTML?
+Because:
+@RestController forces @ResponseBody
+ViewResolver is skipped
+JSON converter wins
+
+❓ Difference between Accept and Content-Type?
+Header	Direction
+Accept	Client → Server (what I want back)
+Content-Type	Client → Server (what I’m sending)
+
+--------------------------------------------------------
+
+4. What is an IOC container?
+IoC Container is a framework for implementing automatic dependency injection.
+It manages object creation and its life-time and also injects dependencies into the class.
+
+An IoC container (Inversion of Control container) is the core of Spring.
+It is responsible for creating, managing, and wiring objects (beans) so you don’t have to.
+✔ Creates objects (beans)
+✔ Injects dependencies
+✔ Manages lifecycle
+✔ Applies configuration
+In Spring:
+ApplicationContext = IoC container
+BeanFactory = basic container
+
+With IoC
+The framework controls object creation.
+class Car {
+    private Engine engine;
+
+    Car(Engine engine) {
+        this.engine = engine;
+    }
+}
+👉 You don’t create Engine
+👉 Spring injects it
+This reversal of control = Inversion of Control
+
+3️⃣ What Does the IoC Container Actually Do?
+1. Scan configuration
+@ComponentScan
+@Configuration
+XML (old style)
+
+2. Create beans
+@Component
+class Engine {}
+
+3. Resolve dependencies
+@Component
+class Car {
+    private final Engine engine;
+
+    Car(Engine engine) {} // dependency injected
+}
+
+4. Manage lifecycle
+@PostConstruct
+@PreDestroy
+Scopes (singleton, prototype)
+
+4️⃣ Types of IoC Containers in Spring
+Container	Description
+BeanFactory	Basic, lazy loading
+ApplicationContext	Advanced, used in Spring Boot
+
+📌 Spring Boot always uses ApplicationContext
+
+6️⃣ Dependency Injection (DI) vs IoC
+IoC
+Principle (who controls object creation)
+DI
+Technique to implement IoC
+Spring uses:
+Constructor injection ✅
+Setter injection
+Field injection ❌ (not recommended)
+
+7️⃣ Why IoC Container is Important
+Without IoC:
+Hard-coded dependencies
+Poor testability
+With IoC:
+Loose coupling
+Easy mocking
+Cleaner architecture
+Easier maintenance
+
+9️⃣ Common Spring Annotations Related to IoC
+| Annotation       | Purpose              |
+| ---------------- | -------------------- |
+| `@Component`     | Register bean        |
+| `@Service`       | Business logic       |
+| `@Repository`    | DB layer             |
+| `@Controller`    | MVC                  |
+| `@Autowired`     | Inject dependency    |
+| `@Configuration` | Bean config          |
+| `@Bean`          | Manual bean creation |
+
+------------------------------------------------------------------------------------------
+
+Q:- Difference between @Component and @Bean?
+Core Difference (One Line)
+@Component is used on a class
+@Bean is used on a method
+
+1️⃣ @Component
+What it does
+Marks a class as a Spring-managed bean
+Discovered automatically via component scanning
+
+Example
+@Component
+public class Engine {
+}
+Spring does:
+Scan → Detect → Instantiate → Manage
+
+| Annotation    | Purpose           |
+| ------------- | ----------------- |
+| `@Component`  | Generic           |
+| `@Service`    | Business logic    |
+| `@Repository` | Persistence layer |
+| `@Controller` | MVC               |
+
+2️⃣ @Bean
+What it does
+Used on a method
+Explicitly tells Spring how to create the object
+Usually inside @Configuration class
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public Engine engine() {
+        return new Engine();
+    }
+}
+Spring does:
+ Call method → Get object → Register as bean
+
+| Feature               | `@Component`       | `@Bean`              |
+| --------------------- | ------------------ | -------------------- |
+| Applied to            | Class              | Method               |
+| Discovery             | Component scanning | Explicit             |
+| Control over creation | ❌ Limited          | ✅ Full               |
+| External libraries    | ❌ Cannot           | ✅ Can                |
+| Configuration logic   | ❌ No               | ✅ Yes                |
+| Typical use           | App classes        | Third-party / config |
+
+4️⃣ When to Use @Component
+✅ When:
+You own the class
+Simple instantiation
+No special setup required
+
+5️⃣ When to Use @Bean
+✅ When:
+Class is from third-party library
+Requires custom initialization
+Needs constructor parameters or logic
+
+6️⃣ Important Subtle Differences ⚠️
+Bean Name
+@Component
+class MyService {}
+Bean name → myService
+
+@Bean
+public MyService customName() {}
+Bean name → customName
+
+Lifecycle Callbacks
+Both support:
+@PostConstruct
+@PreDestroy
+
+Scope
+Both support:
+@Scope("prototype")
+
+❓ Can @Bean exist without @Configuration?
+✅ Yes, but proxying is lost
+Best practice: always use @Configuration
+
+❓ Can @Component replace @Bean?
+❌ No, especially for:
+Third-party classes
+Complex object creation
+
+8️⃣ Real-world Analogy 🧠
+@Component
+🏭 Factory auto-produces standard parts
+@Bean
+🧑‍🔧 Custom-built part with manual steps
+
