@@ -1,0 +1,26 @@
+1. Abstract Factory design pattern:- produce families of related objects without specifying their concrete classes.
+Applicability:-
+🧠 So… WHEN should you actually use Abstract Factory?
+Use it when ALL or MOST of these are true:
+✔ You create multiple related objects together
+✔ Those objects must be consistent
+✔ You want to switch families at runtime or config-time
+✔ You want clean separation between logic and creation
+✔ You expect new variants in the future
+
+❌ Don’t use it if:
+You create only one object
+Variants are unlikely
+Simpler Factory or new is enough
+
+One-liner intuition to remember 🧩
+Factory Method = one product
+Abstract Factory = family of products that must match
+
+ How to Implement
+1.Map out a matrix of distinct product types versus variants of these products.
+2.Declare abstract product interfaces for all product types. Then make all concrete product classes implement these interfaces.
+3.Declare the abstract factory interface with a set of creation methods for all abstract products.
+4.Implement a set of concrete factory classes, one for each product variant.
+5.Create factory initialization code somewhere in the app. It should instantiate one of the concrete factory classes, depending on the application configuration or the current environment. Pass this factory object to all classes that construct products.
+6.Scan through the code and find all direct calls to product constructors. Replace them with calls to the appropriate creation method on the factory object.
