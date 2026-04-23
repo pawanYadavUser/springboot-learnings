@@ -990,7 +990,8 @@ private PaymentService paymentService;
 
 -----------------------------------------------------------------------------
 Q: What are bean scopes and bean lifecycle in springboot?
-“In Spring, a bean scope defines how many instances of a bean the container should create and how long it should live. The most commonly used scopes are:
+“In Spring, a bean scope defines how many instances of a bean the container should create and how long it should live.
+The most commonly used scopes are:
 Singleton (default): One instance for the entire application. Used for stateless services.
 Prototype: A new instance is returned every time the bean is requested.
 Request: One instance per HTTP request (used in web applications).
@@ -1700,6 +1701,7 @@ Bean Name
 @Component
 class MyService {}
 Bean name → myService
+
 
 @Bean
 public MyService customName() {}
