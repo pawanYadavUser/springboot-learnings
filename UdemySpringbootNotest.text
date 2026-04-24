@@ -1,0 +1,100 @@
+1.
+<build>
+<plugins>
+<plugin>
+<groupId>org.apache.maven.plugins</groupId>
+ <artifactId>maven-compiler-plugin</artifactId>
+ <configuration>
+ <annotationProcessorPaths>
+ <path>
+  <groupId>org.projectlombok</groupId>
+  <artifactId>lombok</artifactId>
+  </path>
+   </annotationProcessorPaths>
+   </configuration>
+   </plugin>
+
+    <plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <configuration>
+    <excludes> <exclude>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    </exclude>
+    </excludes>
+    </configuration>
+    </plugin>
+
+       </plugins>
+       </build>
+       role of this in pom.xml amd my application?
+Ans:-
+🔧 1. maven-compiler-plugin (with Lombok)
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+👉 This plugin controls how your Java code is compiled.
+
+🔹 What this part does
+<annotationProcessorPaths>
+    <path>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+    </path>
+</annotationProcessorPaths>
+👉 This tells Maven:
+“While compiling, use Lombok as an annotation processor.”
+
+💡 Why this is needed
+Project Lombok works by generating code at compile time:
+@Getter → generates getters
+@Setter → setters
+@Data → everything
+Without annotation processing:
+❌ No getters generated
+❌ Your API returns {} (exactly what you saw earlier)
+⚠️ Important
+Even with this in pom.xml, you still need in IntelliJ IDEA:
+👉 Enable:
+Annotation Processing → ON
+Otherwise IntelliJ won’t “see” generated code.
+
+🚀 2. spring-boot-maven-plugin
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+👉 This plugin is used to:
+Package your app into a runnable JAR
+Run app via mvn spring-boot:run
+🔹 What this part does
+<excludes>
+    <exclude>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+    </exclude>
+</excludes>
+👉 This tells Spring Boot:
+“Do NOT include Lombok in the final JAR.”
+
+💡 Why exclude Lombok?
+Because Lombok is:
+✅ Compile-time only
+❌ Not needed at runtime
+Including it in your JAR would:
+Increase size
+Be useless in production
+
+📦 In the final JAR (built via Spring Boot Maven Plugin)
+✔ The compiled .class files contain:
+getters
+setters
+constructors
+equals/hashCode
+❌ The Lombok library itself is NOT included (because you excluded it)
+
+💡 So think of it like this
+Stage	What exists
+Source code	@Data, @Getter
+Compile time	Lombok generates methods
+Final JAR	Only normal Java bytecode (getters/setters etc.)
