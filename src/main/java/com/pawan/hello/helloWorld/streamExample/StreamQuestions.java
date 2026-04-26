@@ -5,6 +5,41 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+
+
+/*
+* reverse the string using stringBuilder!
+* reverse the string using reduce operator!
+* find the longest word from the given sentence using max method in streams
+* find the longest word from the given sentence using reduce operator
+* find the list of words with max length!
+* Sum of squares of even number! - using map, using reduce
+* Concatenate the unique characters from the given string using reduce operator
+*
+* */
+
+class User1 {
+    int id;
+    String name;
+
+    public User1(int id, String name){
+        this.id =id;
+        this.name = name;
+    }
+
+    public String getName(){
+        return this.name;
+    }
+
+    public int getId(){
+        return this.id;
+    }
+
+    public String toString(){
+        return this.id+" "+this.name;
+    }
+}
+
 public class StreamQuestions {
     public static void main(String[] args) {
         String input = "This is Pawan";
@@ -65,7 +100,7 @@ public class StreamQuestions {
         System.out.println("Longest word in sentence : " + longestWordInSentence);
         System.out.println("Longest word in sentence using reduce method : " + longestWordInSentence2);
 
-        //find the longest word without punctuation
+        //find the longest word without punctuation , splitting the string based on some non-word char (chars except a-zA-Z_)
         String longestWithoutPunctuation = Arrays.stream("Java, streams are powerful!".split("\\W+"))
                 .max(Comparator.comparingInt(String::length))
                 .orElse("");
@@ -154,5 +189,64 @@ public class StreamQuestions {
 
         System.out.println("uniqueCharString : "+uniqueCharString);
         System.out.println("uniqueCharString parallel thread safe version  : "+String.join("",uniqueCharString2));
+
+        // filter even numbers from the list
+        List<Integer> list1 = Arrays.asList(1,2,3,4,5,6);
+        System.out.println("filtered even numbers for list : "+list1.toString() + " | "+list1.stream().filter(e->e%2==0).toList());
+
+        //Convert list of strings to uppercase
+        List<String> names = Arrays.asList("pawan", "java", "stream");
+        System.out.println("uppercase strings from list : "+names.toString() + " | "+names.stream().map(String::toUpperCase).toList());
+
+        // Find the sum of all numbers
+        List<Integer> list2 = Arrays.asList(1,2,3,4,5);
+        System.out.println("Sum for given list : "+list2.toString() + " | "+list2.stream().reduce(Integer::sum).orElse(0));
+
+       //Count how many strings have length greater than 3.
+        List<String> names1 = Arrays.asList("Ram", "Shyam", "Mohan", "Amit");
+        System.out.println("Count of strings having length greater than 3 from list : "+names1  + " | "+names1.stream().filter(e->e.length()>3).count());
+
+        //Medium level questions!
+
+//        ✅ 2. Group strings by their length
+        List<String> list3 = Arrays.asList("java", "is", "fun", "cool");
+//        Map<Integer, Set<String>> result1 = list3.stream().collect(Collectors.groupingBy(String::length,Collectors.toSet()));
+//        💡 Say this in interview:“Using Set removes duplicates, so I’d confirm requirement before choosing Set vs List.”
+        Map<Integer, List<String>> result1 =
+                list3.stream().collect(Collectors.groupingBy(String::length));
+        System.out.println("Group strings by their length from list : "+list3+ " | "+result1);
+
+//        ✅ 3. Find the second highest number
+        List<Integer> list4 = Arrays.asList(10, 20, 30, 40, 50, 7, 8, 2, 3, 4, 67, 11, 51);
+//        List<Integer> secondHighestNumber = list4.stream().sorted().distinct().skip(list4.size()-2).toList();
+//        ❌ Problem here
+//        👉 Issue:
+//        You used list4.size() → original list size
+//        After distinct(), size changes → wrong result possible
+        int secondHighest = list4.stream()
+                .distinct()
+                .sorted(Comparator.reverseOrder())
+                .skip(1)
+                .findFirst()
+                .orElseThrow();
+        System.out.println("second highes number from list : "+ list4 + " | "+secondHighest);
+//        ✔ Cleaner
+//        ✔ Works even with duplicates
+//        ✔ No dependency on original size
+//        💡 Interview gold line:
+//        “Avoid using original size after stream transformations.”
+
+
+//        ✅ 4. Convert list of objects into a Map
+        List<User1> user1List = new ArrayList<>();
+        user1List.add(new User1(1,"Ray"));
+        user1List.add(new User1(1,"Kai"));
+        user1List.add(new User1(2,"Vanick"));
+        Map<Integer, String> resultMap = user1List.stream().collect(Collectors.toMap(User1::getId,User1::getName,(a,b)->b));
+        System.out.println("Convert list : " + user1List + "to map object | "+resultMap.toString());
+
+//        ✅ 5. Find the longest string
+        List<String> list5 = Arrays.asList("java", "stream", "api", "programming");
+        System.out.println("Longest string from list : "+list5 + " | "+list5.stream().max(Comparator.comparingInt(String::length)).orElse(""));
     }
 }
