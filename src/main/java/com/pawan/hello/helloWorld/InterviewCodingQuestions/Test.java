@@ -93,7 +93,7 @@ public class Test {
 //        HashSet stores seen elements
 //        First repeat = duplicate
 //
-//👉 Time: O(n) | Space: O(n)
+//         👉 Time: O(n) | Space: O(n)
         HashSet<Integer> set = new HashSet<>();
 //        for(int num : input){
 //            if(set.contains(num)) {
@@ -120,17 +120,15 @@ public class Test {
 //        👎 Cons:
 //        Extra space
 //        Slightly heavier than needed
-
+        Map<Integer, Long> frequency = Arrays.stream(input).boxed().collect(Collectors.groupingBy(n-> n, Collectors.counting()));
+        Set <Integer> duplicates = frequency.entrySet().stream().filter(e->e.getValue()>1).map(Map.Entry::getKey).collect(Collectors.toSet());
+        return duplicates;
 
 //        ❌ What NOT to do (bad interview answer)
 //        list.stream()
 //                .filter(x -> Collections.frequency(list, x) > 1)
 //
 //        👉 This is O(n²) → interviewers will reject it.
-        Map<Integer, Long> frequency = Arrays.stream(input).boxed().collect(Collectors.groupingBy(n-> n, Collectors.counting()));
-        Set <Integer> duplicates = frequency.entrySet().stream().filter(e->e.getValue()>1).map(Map.Entry::getKey).collect(Collectors.toSet());
-        return duplicates;
-
     }
 
 
@@ -143,10 +141,25 @@ public class Test {
         int j=0; //pointer to zero
         for(int i=0;i<arr.length;i++) {
             if (arr[i] != 0) {
+
                 int temp = arr[j];
                 arr[j] = arr[i];
                 arr[i] = temp;
                 j++;
+            }
+        }
+        return arr;
+    }
+
+    public static int[] moveZeroesToStart(int[] arr){
+        int j=arr.length-1; //pointer to zero
+        for(int i=arr.length-1; i>=0; i--) {
+            if (arr[i] != 0) {
+
+                int temp = arr[j];
+                arr[j] = arr[i];
+                arr[i] = temp;
+                j--;
             }
         }
         return arr;
@@ -180,6 +193,7 @@ public class Test {
         System.out.println("Find duplicate in array: "+ Arrays.toString(arr1)+ " | "+findDuplicateInArray(arr1).toString());
 
         System.out.println("Move zeros to end for arr : "+Arrays.toString(arr2) + " | "+Arrays.toString(moveZeroesToEnd(arr2)));
+        System.out.println("Move zeros to start for arr : "+Arrays.toString(arr2) + " | "+Arrays.toString(moveZeroesToStart(arr2)));
 
         System.out.println("Is anagram : "+"param  & ramap | " + isAnagram("param", "ramap"));
         System.out.println("Is anagram : "+"aman  & naman | " + isAnagram("aman", "naman"));
